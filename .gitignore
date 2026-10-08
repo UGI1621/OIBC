@@ -1,0 +1,20 @@
+# 대회 원본 데이터: 재배포 금지·용량 초과. 주최 측에서 받아 같은 경로에 둘 것 (README 참고)
+OIBC_2026_DATA/
+*.zip
+
+# 생성물 (build_db.py, baseline.py 실행으로 재생성 가능)
+*.duckdb
+*.duckdb.wal
+*.parquet
+
+# 파이썬
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 편집기 개인 설정
+.vscode/

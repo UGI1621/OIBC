@@ -1,0 +1,9 @@
+pandas
+numpy
+pyarrow
+lightgbm
+scikit-learn
+scipy
+duckdb
+# torch는 CPU 빌드 권장: pip install torch --index-url https://download.pytorch.org/whl/cpu
+torch

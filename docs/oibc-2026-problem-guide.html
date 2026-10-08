@@ -1,0 +1,420 @@
+<title>OIBC 2026 문제 정의서</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: one reading column (max 46rem), numbered sections, figures sit inside the column; wide figures scroll in their own box. */
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --fg:#17202b; --fg-2:#4a5565; --muted:#7a8595;
+  --line:#dbe1e9; --accent:#1c5cab; --accent-soft:#e3edfb; --warn-soft:#fff4de; --warn-line:#e3b85a;
+  --chart-accent:#2a78d6; --chart-dim:#c3c6cc;
+  --font-display:'Gowun Batang','Noto Serif KR',Georgia,serif;
+  --font-body:'Noto Sans KR',system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f141a; --surface:#171d26; --fg:#e7ebf1; --fg-2:#b3bcc9; --muted:#8893a3;
+    --line:#2a3340; --accent:#86b6ef; --accent-soft:#1a2a40; --warn-soft:#2f2816; --warn-line:#a98434;
+    --chart-accent:#3987e5; --chart-dim:#4a5260; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f141a; --surface:#171d26; --fg:#e7ebf1; --fg-2:#b3bcc9; --muted:#8893a3;
+  --line:#2a3340; --accent:#86b6ef; --accent-soft:#1a2a40; --warn-soft:#2f2816; --warn-line:#a98434;
+  --chart-accent:#3987e5; --chart-dim:#4a5260; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.75;margin:0}
+.wrap{max-width:46rem;margin:0 auto;padding-block:40px 72px;padding-inline:20px}
+header.doc{border-bottom:1px solid var(--line);padding-bottom:28px;margin-bottom:36px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:0 0 10px}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(28px,5.5vw,40px);line-height:1.25;margin:0 0 14px;text-wrap:balance}
+.lede{font-size:17px;color:var(--fg-2);margin:0 0 18px;max-width:40rem}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted)}
+.meta b{color:var(--fg-2);font-weight:500}
+h2{font-family:var(--font-display);font-weight:700;font-size:24px;line-height:1.3;margin:52px 0 14px;text-wrap:balance;display:flex;gap:12px;align-items:baseline}
+h2 .num{font-family:var(--font-body);font-size:13px;color:var(--accent);font-weight:700;letter-spacing:.04em;min-width:1.6em}
+h3{font-size:17px;font-weight:700;margin:28px 0 8px}
+p{margin:0 0 14px}
+ul,ol{margin:0 0 14px;padding-left:1.3em}
+li{margin-bottom:6px}
+li::marker{color:var(--muted)}
+strong{font-weight:700}
+.summary{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:6px;padding:18px 20px;margin:0 0 8px}
+.summary h2{margin:0 0 10px;font-size:18px}
+.summary ul{margin:0}
+.callout{background:var(--accent-soft);border-radius:6px;padding:14px 18px;margin:18px 0}
+.callout.warn{background:var(--warn-soft);border-left:3px solid var(--warn-line)}
+.callout p:last-child{margin-bottom:0}
+.formula{font-family:ui-monospace,Consolas,'Noto Sans KR',monospace;font-size:15px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px 16px;margin:14px 0;line-height:1.7;overflow-x:auto;white-space:pre}
+.tbl{overflow-x:auto;margin:14px 0 20px}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:420px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:700;color:var(--fg-2);font-size:13px;letter-spacing:.02em;border-bottom:2px solid var(--line)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+code{font-family:ui-monospace,Consolas,monospace;font-size:.92em;background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+pre{font-family:ui-monospace,Consolas,monospace;font-size:13.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:10px 0 16px;line-height:1.6}
+figure{margin:22px 0 26px}
+figcaption{font-size:13.5px;color:var(--fg-2);margin-top:10px;line-height:1.6}
+.chart{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px 12px 8px}
+.chart-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;align-items:baseline;padding:0 4px 6px}
+.chart-title{font-weight:700;font-size:15px;margin:0}
+.legend{display:flex;gap:14px;font-size:12.5px;color:var(--fg-2);margin:0;padding:0;list-style:none}
+.legend li{display:flex;align-items:center;gap:6px;margin:0}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.sw.k3{background:var(--chart-accent)} .sw.k1{background:var(--chart-dim)}
+svg.plot{width:100%;height:auto;display:block}
+.plot .grid{stroke:var(--line);stroke-width:1}
+.plot .axis{stroke:var(--muted);stroke-width:1}
+.plot .tick{fill:var(--muted);font-size:11px;font-family:var(--font-body)}
+.plot .label{fill:var(--fg);font-size:12px;font-weight:700;font-family:var(--font-body)}
+.plot .bar-k3{fill:var(--chart-accent)} .plot .bar-k1{fill:var(--chart-dim)}
+.plot .hit{cursor:default}
+.tip{position:absolute;pointer-events:none;background:var(--fg);color:var(--bg);font-size:12.5px;padding:5px 9px;border-radius:4px;white-space:nowrap;transform:translate(-50%,-100%);z-index:2}
+details{margin-top:10px}
+summary{cursor:pointer;font-size:13.5px;color:var(--accent);font-weight:500}
+summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.diagrams{display:flex;flex-wrap:wrap;gap:14px}
+.diagrams figure{flex:1 1 280px;min-width:0;margin:0;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 12px 10px}
+.diagrams svg{width:100%;height:auto;display:block;color:var(--fg)}
+.diagrams figcaption{margin-top:6px}
+.scrollfig{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px}
+.scrollfig svg{min-width:520px;width:100%;height:auto;display:block;color:var(--fg)}
+.diag text{font-family:var(--font-body);font-size:12px;fill:currentColor}
+.diag .box{fill:none;stroke:currentColor;stroke-width:1.2}
+.diag .box.hi{fill:var(--accent-soft);stroke:var(--accent)}
+.diag .arrow{stroke:currentColor;stroke-width:1.2;fill:none}
+.diag .small{font-size:11px;fill:var(--fg-2)}
+.diag .strong{font-weight:700}
+.diag .band{fill:var(--accent-soft)}
+.diag .ok{fill:var(--accent);font-weight:700}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0 18px}
+.kv div{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px}
+.kv .v{font-size:22px;font-weight:700;line-height:1.2;margin-bottom:4px}
+.kv .l{font-size:12.5px;color:var(--fg-2);line-height:1.45}
+dl.gloss{margin:0}
+dl.gloss div{display:grid;grid-template-columns:minmax(110px,9rem) 1fr;gap:4px 14px;padding:10px 0;border-bottom:1px solid var(--line)}
+dl.gloss div:last-child{border-bottom:none}
+dl.gloss dt{font-weight:700;margin:0}
+dl.gloss dd{margin:0;color:var(--fg-2)}
+@media (max-width:480px){ dl.gloss div{grid-template-columns:1fr} }
+footer.doc{border-top:1px solid var(--line);margin-top:56px;padding-top:18px;font-size:13px;color:var(--muted);line-height:1.6}
+a{color:var(--accent)}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important;animation:none!important} }
+</style>
+
+<div class="wrap">
+<header class="doc">
+  <p class="eyebrow">2026 OIBC Challenge · 처음 보는 사람을 위한 안내</p>
+  <h1>태양광 발전소 253개를 두 팀으로 나누고, 내일 발전량을 맞히는 문제</h1>
+  <p class="lede">제6회 POSTECH·KAIST·UNIST AI &amp; 데이터사이언스 경진대회의 과제를 전력시장이나 데이터 분석을 모르는 사람도 따라올 수 있게 풀어 쓴 글입니다.</p>
+  <div class="meta">
+    <span><b>근거</b> 제공 데이터 안내문(README), 기준 코드(baseline.py), 대회 웹페이지</span>
+    <span><b>작성</b> 2026년 10월 7일</span>
+    <span><b>상태</b> 공식 문제정의서 공개 전. 공개되면 그 문서가 이 글보다 우선합니다</span>
+  </div>
+</header>
+
+<section class="summary">
+  <h2>한눈에 보기</h2>
+  <ul>
+    <li><strong>역할.</strong> 태양광 발전소 253개를 대신 운영하는 회사가 됩니다. 발전소를 두 팀(G1, G2)으로 나누고, 각 팀이 매 시간 얼마나 발전할지 하루 전에 예측합니다.</li>
+    <li><strong>분량.</strong> 2025년 6월 1일부터 2026년 5월 31일까지 1년, 8,760시간 × 두 팀 = 17,520개의 예측값을 냅니다.</li>
+    <li><strong>승부.</strong> 예측이 실제와 다른 만큼 벌금을 냅니다. 벌금이 가장 적은 팀이 이깁니다. 낮 11시부터 15시 사이는 벌금이 3배입니다.</li>
+  </ul>
+</section>
+
+<h2><span class="num">01</span>어떤 상황인가</h2>
+<p>태양광 발전소는 햇빛이 있을 때만 전기를 만들고, 구름이 끼면 생산량이 뚝 떨어집니다. 반면 전력을 관리하는 쪽은 "내일 몇 시에 전기가 얼마나 들어올지"를 미리 알아야 다른 발전소를 켜고 끌 계획을 세울 수 있습니다. 그래서 전기를 파는 쪽은 하루 전에 시간별 생산량을 신고하고, 신고한 양과 실제 양이 다르면 그 차이에 대해 벌금을 냅니다.</p>
+<p>작은 발전소 하나는 이런 시장에 혼자 들어가기 어렵습니다. 그래서 여러 발전소를 묶어 하나의 큰 발전소처럼 신고하는데, 이 묶음을 <strong>집합자원</strong>이라고 부릅니다. 이 대회에서 참가자는 253개 발전소를 두 개의 집합자원 G1과 G2로 묶어 신고하는 운영사 역할을 맡습니다.</p>
+<p>각 집합은 설비용량(최대로 낼 수 있는 출력)의 합이 20,000 kW 이상이어야 합니다. 253개를 모두 합쳐도 42,655 kW이므로, 만들 수 있는 집합은 최대 두 개입니다. 20,000 kW라는 기준은 실제 전력시장의 등록 요건을 본뜬 것으로 보이지만, 이 부분은 추정입니다.</p>
+<div class="kv">
+  <div><div class="v">253개</div><div class="l">발전소 수. 모두 어느 한 팀에 들어가야 합니다</div></div>
+  <div><div class="v">42,655 kW</div><div class="l">전체 설비용량. 각 팀은 20,000 kW 이상</div></div>
+  <div><div class="v">14 ~ 1,388 kW</div><div class="l">발전소 크기 범위. 절반은 100 kW 아래의 소규모</div></div>
+</div>
+
+<h2><span class="num">02</span>해야 할 일 두 가지</h2>
+<h3>첫째, 팀 나누기 (구성)</h3>
+<ul>
+  <li>253개 발전소 하나하나를 G1 또는 G2 중 한 곳에 넣습니다. 빼놓는 발전소가 있으면 안 됩니다.</li>
+  <li>각 팀의 설비용량 합이 20,000 kW 이상이어야 합니다. 전체가 42,655 kW이므로 사실상 반반에 가깝게 나누게 됩니다.</li>
+  <li>한 번 정한 팀은 1년 내내 그대로입니다. 계절에 따라 바꿀 수 없습니다.</li>
+  <li>주최 측이 참고용으로 A/B 배정을 함께 주지만, 그대로 쓸 의무는 없습니다.</li>
+</ul>
+<h3>둘째, 발전량 맞히기 (예측)</h3>
+<ul>
+  <li>두 팀 각각에 대해, 1년 8,760시간마다 "이 시간에 몇 kWh를 만들까"를 적습니다.</li>
+  <li>모든 예측은 <strong>대상일 전날 오후 5시</strong>에 한 것으로 봅니다. 그 이후에 생긴 정보는 쓸 수 없습니다.</li>
+  <li>실제로는 대회 기간(2026년 11월) 안에 1년치를 한 번에 파일로 제출합니다.</li>
+</ul>
+<div class="callout"><p>두 가지는 따로가 아니라 함께 설계해야 합니다. 어떻게 나누느냐에 따라 각 팀의 발전량 패턴이 바뀌고, 예측이 얼마나 정확한지에 따라 유리한 나누기도 달라집니다. 주최 측도 "배정과 예측을 어떤 순서로, 어떤 단위로 다룰지는 열려 있다"고 밝혔습니다.</p></div>
+
+<h2><span class="num">03</span>점수는 어떻게 매기나</h2>
+<p>점수 S는 두 부분으로 되어 있습니다. 실제로 만든 전기의 매출에서 벌금을 뺍니다.</p>
+<div class="formula">S = Σ 전기값(t) × 실제발전량(t)
+    − 0.10 × Σ 전기값(t) × 가중치(t) × |예측(t) − 실제발전량(t)|
+
+t = 1년의 매 시각(8,760개), 두 팀 각각에 대해 합산
+전기값 = 그 시각의 전력 도매가격 SMP(원/kWh), 가중치 = 11~15시는 3, 그 외는 1</div>
+<p><strong>앞부분(매출)은 누가 해도 같습니다.</strong> 두 팀을 합치면 253개 발전소 전체가 실제로 만든 전기이고, 모든 발전소를 반드시 어느 팀에든 넣어야 하므로 참가자가 바꿀 수 있는 것이 없습니다. 따라서 <strong>순위는 뒷부분, 벌금만으로 결정됩니다.</strong> 겉으로는 매출을 극대화하는 문제처럼 보이지만, 실제로는 예측 오차를 최소화하는 문제입니다.</p>
+<p>벌금을 말로 풀면 "1 kWh 틀릴 때마다 그 시각 전기값의 10%를 내고, 11시부터 15시까지는 30%를 낸다"입니다. 예를 들어 전기값이 110원인 시각에 100 kWh를 틀리면 벌금은 1,100원이고, 같은 양을 13시에 틀리면 3,300원입니다. 많이 틀리든 적게 틀리든 틀린 양에 정비례하므로, 어느 한 시각을 크게 틀리는 것과 여러 시각을 조금씩 틀리는 것이 같은 벌금입니다.</p>
+<p>규모 감각을 위해 기준 코드가 낸 예측으로 계산하면 1년 매출은 약 66억 원이고, 매 시간 10%씩 틀린다고 가정하면 벌금은 약 1.5억 원, 매출의 2% 남짓입니다. 이 차이 안에서 순위가 갈립니다.</p>
+
+<figure>
+  <div class="chart">
+    <div class="chart-head">
+      <p class="chart-title">하루 중 발전량은 언제 나오나</p>
+      <ul class="legend"><li><span class="sw k3"></span>벌금 가중치 3 (11~15시)</li><li><span class="sw k1"></span>가중치 1</li></ul>
+    </div>
+    <svg id="hourChart" class="plot" viewBox="0 0 640 260" role="img" aria-label="시각별 연간 발전량 비중. 11시부터 15시 사이 다섯 시간에 전체의 65퍼센트가 나오고, 이 구간은 벌금 가중치가 3이다. 밤에는 발전량이 0이다."></svg>
+    <div id="hourTip" class="tip" hidden></div>
+    <details>
+      <summary>표로 보기</summary>
+      <div class="tbl"><table>
+        <thead><tr><th>시간대</th><th class="n">연간 발전량 비중</th><th class="n">벌금 가중치</th></tr></thead>
+        <tbody id="hourTable"></tbody>
+      </table></div>
+    </details>
+  </div>
+  <figcaption>학습 데이터의 최근 1년(2024년 6월~2025년 5월)에서 253개 발전소 발전량을 시각별로 합산한 비중. 막대의 시각은 그 시간이 끝나는 시점이어서, 13시 막대는 12시부터 13시까지 한 시간의 발전량입니다. 파란 구간은 벌금 가중치가 3인 시각입니다.</figcaption>
+</figure>
+
+<p>이 그림이 말하는 것은 두 가지입니다. 밤에는 발전량이 0이므로 0이라고 적으면 끝입니다. 그리고 가중치 3인 다섯 시간에 하루 발전량의 65%가 몰려 있고, 1년 전체 벌금 가중치의 45%가 이 구간에 걸려 있습니다. 정오 전후를 얼마나 잘 맞히느냐가 승부를 거의 결정합니다.</p>
+<div class="tbl"><table>
+  <thead><tr><th>점수와 관련된 숫자</th><th class="n">값</th><th>뜻</th></tr></thead>
+  <tbody>
+    <tr><td>채점 시각 수</td><td class="n">8,760시간</td><td>2025-06-01 01:00 ~ 2026-06-01 00:00, 매 시간</td></tr>
+    <tr><td>가중치 3인 시각</td><td class="n">1,825시간</td><td>매일 11~15시 다섯 시간 × 365일</td></tr>
+    <tr><td>가중치 3 구간의 벌금 가중치 비중</td><td class="n">44.7%</td><td>전기값 × 가중치를 1년 합산한 것 중 이 구간의 몫</td></tr>
+    <tr><td>가중치 3 구간의 발전량 비중</td><td class="n">65.5%</td><td>최근 1년 실적 기준</td></tr>
+    <tr><td>평가 기간 전기값 평균</td><td class="n">108원/kWh</td><td>최고 194원, 0원인 시각이 18시간 있음</td></tr>
+    <tr><td>전기값 0원인 시각</td><td class="n">18시간</td><td>이때는 아무 값을 내도 벌금이 0</td></tr>
+    <tr><td>벌금 비율</td><td class="n">10%</td><td>틀린 양 × 전기값 × 가중치의 10%</td></tr>
+  </tbody>
+</table></div>
+<p>평가 기간의 전기값과 가중치는 모두 미리 공개되어 있습니다. 어느 시각을 틀리면 얼마나 비싼지 참가자가 미리 알 수 있다는 뜻입니다.</p>
+
+<h2><span class="num">04</span>왜 팀 나누기가 점수를 바꾸나</h2>
+<p>발전소 하나하나의 예측은 어긋나기 마련입니다. 어느 곳은 예상보다 구름이 많아 덜 나오고, 어느 곳은 예상보다 맑아 더 나옵니다. 그런데 벌금은 발전소별로 매기지 않고 <strong>팀 합계</strong>로 매깁니다. 같은 팀 안에서는 모자란 곳과 넘친 곳이 서로 지워져 벌금이 줄어듭니다. 다른 팀으로 갈라져 있으면 지워지지 않고 각자 벌금을 냅니다.</p>
+<div class="diagrams">
+  <figure>
+    <svg class="diag" viewBox="0 0 320 196" role="img" aria-label="두 발전소가 같은 팀에 있을 때. 하나는 100 모자라고 하나는 100 넘쳐 팀 합계 오차가 0이 되고 벌금이 없다.">
+      <defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="currentColor"/></marker></defs>
+      <rect class="box" x="12" y="22" width="128" height="46" rx="4"/>
+      <text x="76" y="41" text-anchor="middle" class="strong">발전소 ㄱ</text>
+      <text x="76" y="58" text-anchor="middle" class="small">예상보다 100 kWh 모자람</text>
+      <rect class="box" x="12" y="114" width="128" height="46" rx="4"/>
+      <text x="76" y="133" text-anchor="middle" class="strong">발전소 ㄴ</text>
+      <text x="76" y="150" text-anchor="middle" class="small">예상보다 100 kWh 넘침</text>
+      <path class="arrow" d="M140,45 C170,45 170,91 196,91" marker-end="url(#ah1)"/>
+      <path class="arrow" d="M140,137 C170,137 170,91 196,91" marker-end="url(#ah1)"/>
+      <text x="168" y="40" text-anchor="middle" class="small">−100</text>
+      <text x="168" y="152" text-anchor="middle" class="small">+100</text>
+      <rect class="box hi" x="200" y="66" width="108" height="50" rx="4"/>
+      <text x="254" y="86" text-anchor="middle" class="strong">같은 팀</text>
+      <text x="254" y="104" text-anchor="middle" class="small">합계 오차 0</text>
+      <text x="254" y="150" text-anchor="middle" class="ok">벌금 0</text>
+      <text x="160" y="186" text-anchor="middle" class="small">서로 지워진다</text>
+    </svg>
+    <figcaption>같은 팀이면 모자람과 넘침이 상쇄됩니다.</figcaption>
+  </figure>
+  <figure>
+    <svg class="diag" viewBox="0 0 320 196" role="img" aria-label="두 발전소가 다른 팀에 있을 때. G1은 100 모자라고 G2는 100 넘쳐 각각 벌금을 내므로 합쳐서 200 kWh 몫의 벌금이 된다.">
+      <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="currentColor"/></marker></defs>
+      <rect class="box" x="12" y="22" width="128" height="46" rx="4"/>
+      <text x="76" y="41" text-anchor="middle" class="strong">발전소 ㄱ</text>
+      <text x="76" y="58" text-anchor="middle" class="small">예상보다 100 kWh 모자람</text>
+      <rect class="box" x="12" y="114" width="128" height="46" rx="4"/>
+      <text x="76" y="133" text-anchor="middle" class="strong">발전소 ㄴ</text>
+      <text x="76" y="150" text-anchor="middle" class="small">예상보다 100 kWh 넘침</text>
+      <path class="arrow" d="M140,45 H196" marker-end="url(#ah2)"/>
+      <path class="arrow" d="M140,137 H196" marker-end="url(#ah2)"/>
+      <text x="168" y="40" text-anchor="middle" class="small">−100</text>
+      <text x="168" y="132" text-anchor="middle" class="small">+100</text>
+      <rect class="box" x="200" y="22" width="108" height="46" rx="4"/>
+      <text x="254" y="41" text-anchor="middle" class="strong">G1</text>
+      <text x="254" y="58" text-anchor="middle" class="small">오차 −100 → 벌금</text>
+      <rect class="box" x="200" y="114" width="108" height="46" rx="4"/>
+      <text x="254" y="133" text-anchor="middle" class="strong">G2</text>
+      <text x="254" y="150" text-anchor="middle" class="small">오차 +100 → 벌금</text>
+      <text x="160" y="186" text-anchor="middle" class="small">합쳐서 200 kWh 몫의 벌금</text>
+    </svg>
+    <figcaption>다른 팀이면 각자 벌금을 냅니다.</figcaption>
+  </figure>
+</div>
+<p>이 원리에서 두 가지 결론이 나옵니다. 첫째, 한 팀 안에는 서로 다른 방향으로 틀리는 발전소들이 섞여 있을수록 좋습니다. 둘째, 두 팀은 <strong>같은 날 같은 방향으로 틀리는 것</strong>이 가장 좋습니다. G1이 모자란 날 G2도 모자라면 두 팀의 벌금 합은 전체를 한 팀으로 묶었을 때와 같아지지만, G1은 모자라고 G2는 넘치면 그만큼 벌금이 더 붙습니다. 그래서 두 팀을 서로 닮게, 즉 각 팀이 전체 발전소를 축소한 모습이 되도록 지역과 크기를 골고루 섞는 쪽이 유리합니다. "영남은 G1, 호남은 G2"처럼 지역으로 가르면 두 팀이 반대로 틀리는 날이 많아져 불리해집니다.</p>
+<div class="callout"><p>이 결론은 공개된 점수식에서 수학적으로 따라 나오는 것이고, 실제로 어떤 발전소들이 같은 방향으로 틀리는지는 학습 데이터로 확인해야 합니다. 어느 나누기가 가장 좋은지는 참가자가 데이터로 찾아내야 하는 핵심 과제입니다.</p></div>
+
+<h2><span class="num">05</span>무엇을 보고 맞히나</h2>
+<p>주최 측이 주는 자료는 여섯 종류입니다. 중요한 것은 마지막 열, <strong>평가 기간에도 있는가</strong>입니다.</p>
+<div class="tbl"><table>
+  <thead><tr><th>자료</th><th>쉽게 말하면</th><th>기간</th><th>평가 기간에도 있나</th></tr></thead>
+  <tbody>
+    <tr><td>발전소 정보</td><td>253개 발전소의 크기, 대략의 위치(비식별을 위해 2 km 안에서 옮긴 좌표), 가장 가까운 기상 관측지점</td><td>고정</td><td>있음</td></tr>
+    <tr><td>과거 발전 기록</td><td>발전소별로 매 시간 실제로 만든 전기량. 439만 행</td><td>2021년 1월 ~ 2025년 5월</td><td><strong>없음</strong></td></tr>
+    <tr><td>기상 예보 (회사 A)</td><td>61개 지점의 운량, 기온, 습도, 비, 눈 등 10가지. 전날 10시와 17시에 두 번 발행</td><td>2021년 1월 ~ 2026년 5월</td><td>있음</td></tr>
+    <tr><td>기상 예보 (회사 B)</td><td>73개 지점의 자외선지수, 구름 높이, 강수확률 등 20가지. 같은 두 번 발행</td><td>2021년 1월 ~ 2026년 5월</td><td>있음</td></tr>
+    <tr><td>실제 날씨 기록</td><td>관측지점에서 실제로 측정된 날씨</td><td>2021년 1월 ~ 2025년 5월</td><td><strong>없음</strong></td></tr>
+    <tr><td>전기값과 가중치</td><td>매 시각의 전력 도매가격(SMP)과 벌금 가중치</td><td>2021년 1월 ~ 2026년 5월</td><td>있음 (미리 공개)</td></tr>
+  </tbody>
+</table></div>
+<p>평가 기간에는 <strong>실제 발전량도, 실제 날씨도 없습니다.</strong> 오직 두 기상 회사의 예보만 보고 1년치를 맞혀야 합니다. "어제 얼마나 발전했는지 보고 오늘을 조정한다"는 방식은 쓸 수 없습니다. 과거 4년 반의 기록은 "이런 예보가 나왔을 때 이 발전소는 보통 이만큼 발전했다"는 관계를 배우는 데 쓰입니다.</p>
+<p>기상 예보 중 발전량과 가장 관계가 깊은 것은 회사 B의 자외선지수, 두 회사의 상대습도, 운량, 구름 높이였습니다. 비와 눈 관련 수치는 대부분 0이라 정보가 적고, 두 회사의 운량 예보는 서로 꽤 달라서 둘을 함께 보는 것이 유리합니다.</p>
+
+<figure>
+  <div class="scrollfig">
+    <svg class="diag" viewBox="0 0 560 170" role="img" aria-label="하루 전 예측의 시간 순서. 전날 10시 예보 발행, 전날 17시 두 번째 예보 발행과 예측 마감, 그 뒤 대상일 0시부터 24시까지 실제 발전이 일어나고 시간마다 예측과 비교해 벌금을 계산한다.">
+      <defs><marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="currentColor"/></marker></defs>
+      <rect class="band" x="372" y="58" width="168" height="36" rx="4"/>
+      <line class="arrow" x1="28" y1="76" x2="548" y2="76" marker-end="url(#ah3)"/>
+      <line class="arrow" x1="110" y1="60" x2="110" y2="92"/>
+      <line class="arrow" x1="250" y1="60" x2="250" y2="92"/>
+      <line class="arrow" x1="372" y1="60" x2="372" y2="92"/>
+      <text x="110" y="48" text-anchor="middle" class="strong">전날 10:00</text>
+      <text x="110" y="112" text-anchor="middle" class="small">기상 예보 ① 발행</text>
+      <text x="250" y="48" text-anchor="middle" class="strong">전날 17:00</text>
+      <text x="250" y="112" text-anchor="middle" class="small">기상 예보 ② 발행</text>
+      <text x="250" y="128" text-anchor="middle" class="small">예측 마감 시점</text>
+      <text x="250" y="146" text-anchor="middle" class="small">이후 정보는 사용 불가</text>
+      <text x="456" y="48" text-anchor="middle" class="strong">대상일 0시 ~ 24시</text>
+      <text x="456" y="80" text-anchor="middle" class="small">실제 발전</text>
+      <text x="456" y="112" text-anchor="middle" class="small">시간마다 예측과 비교</text>
+      <text x="456" y="128" text-anchor="middle" class="small">차이 × 전기값 × 가중치 → 벌금</text>
+      <text x="40" y="30" class="small">시간 →</text>
+    </svg>
+  </div>
+  <figcaption>하루의 흐름. 쓸 수 있는 정보는 전날 17시까지 발행된 두 번의 예보이고, 대상일의 실제 발전량은 채점에만 쓰입니다.</figcaption>
+</figure>
+
+<h2><span class="num">06</span>지켜야 할 규칙</h2>
+<ul>
+  <li><strong>외부 자료 금지.</strong> 기상청 예보, 위성 사진, 다른 발전소 자료처럼 주최 측이 주지 않은 데이터는 쓸 수 없습니다. 외부 데이터로 미리 학습된 모델도 쓸 수 없습니다.</li>
+  <li><strong>미래 정보 금지.</strong> 대상일 전날 17시 이후에 생긴 정보는 어떤 것도 쓸 수 없습니다. 대상일 이후에 발행된 예보도 여기에 해당합니다.</li>
+  <li><strong>발전소 신원 추적 금지.</strong> 주어진 좌표로 실제 발전소나 사업자가 어디인지 알아내는 행위는 실격입니다.</li>
+  <li><strong>공정성.</strong> 계정 중복, 팀 간 담합, 다른 팀과 지나치게 비슷한 제출은 소명 요구와 실격 대상입니다.</li>
+  <li><strong>도구.</strong> 사용 언어는 Python 또는 R입니다.</li>
+  <li><strong>제출 횟수.</strong> 하루 3회, 대회 기간 전체 20회입니다. 시도 기회가 적으므로 제출 전 스스로 점수를 가늠하는 방법을 갖추는 것이 중요합니다.</li>
+</ul>
+
+<h2><span class="num">07</span>무엇을 제출하나</h2>
+<p>두 개의 CSV 파일을 냅니다. 하나는 팀 나누기, 하나는 예측값입니다.</p>
+<h3>composition.csv (팀 나누기)</h3>
+<p>발전소마다 어느 팀인지 한 줄씩, 253줄입니다.</p>
+<pre>site_id,group
+PV001,G1
+PV002,G2
+PV003,G1
+...</pre>
+<h3>forecast.csv (예측)</h3>
+<p>팀별로 8,760시각의 예측값, 합쳐서 17,520줄입니다. 시각에는 한국 시간대 표시(+09:00)가 있어야 하고, 예측값은 0 이상이어야 합니다.</p>
+<pre>group,ts,forecast_kwh
+G1,2025-06-01 01:00:00+09:00,0.0
+G1,2025-06-01 02:00:00+09:00,0.0
+...
+G2,2026-06-01 00:00:00+09:00,0.0</pre>
+<p>주최 측이 함께 준 기준 코드(baseline.py)를 실행하면 이 두 파일이 그대로 만들어집니다. 참고용 A/B 배정을 그대로 쓰고, 기상 예보로 발전소별 발전량을 예측해 팀별로 합산하는 가장 단순한 방법입니다. 이 결과가 참가자들이 넘어야 할 출발점입니다.</p>
+
+<h2><span class="num">08</span>일정과 상금</h2>
+<div class="tbl"><table>
+  <thead><tr><th>단계</th><th>날짜</th><th>비고</th></tr></thead>
+  <tbody>
+    <tr><td>참가 신청</td><td>2026년 10월 1일 ~ 10월 30일</td><td>전국 대학생·대학원생, 개인 또는 5명 이하 팀</td></tr>
+    <tr><td>데이터 배포</td><td>2026년 10월 1일</td><td></td></tr>
+    <tr><td>온라인 설명회</td><td>10월 12일, 10월 13일 15:00</td><td>두 차례</td></tr>
+    <tr><td>대회 기간 (제출)</td><td>2026년 11월 2일 10:00 ~ 11월 13일</td><td>하루 3회, 총 20회 제출</td></tr>
+    <tr><td>온라인 발표 평가</td><td>11월 23일 ~ 27일 중 하루</td><td>상위 7개 팀</td></tr>
+    <tr><td>시상식</td><td>2026년 12월 4일</td><td>부산 BPEX, 대한산업공학회 추계학술대회 특별세션</td></tr>
+  </tbody>
+</table></div>
+<div class="tbl"><table>
+  <thead><tr><th>상</th><th class="n">팀 수</th><th class="n">상금</th></tr></thead>
+  <tbody>
+    <tr><td>대상</td><td class="n">1</td><td class="n">500만 원</td></tr>
+    <tr><td>최우수상 (대학생 1팀, 대학원생 1팀)</td><td class="n">2</td><td class="n">각 200만 원</td></tr>
+    <tr><td>우수상</td><td class="n">4</td><td class="n">각 100만 원</td></tr>
+    <tr><td>장려상</td><td class="n">10</td><td class="n">각 40만 원</td></tr>
+  </tbody>
+</table></div>
+
+<h2><span class="num">09</span>용어 풀이</h2>
+<dl class="gloss">
+  <div><dt>집합자원</dt><dd>여러 발전소를 묶어 하나의 큰 발전소처럼 전력시장에 신고하는 단위. 가상발전소(VPP)라고도 합니다. 이 대회의 G1, G2가 각각 하나의 집합자원입니다.</dd></div>
+  <div><dt>SMP (전기값)</dt><dd>계통한계가격. 그 시각에 전기 1 kWh가 도매시장에서 거래되는 가격(원/kWh)입니다. 이 대회에서는 매출과 벌금의 단가로 쓰입니다.</dd></div>
+  <div><dt>kW와 kWh</dt><dd>kW는 순간 출력(크기), kWh는 한 시간 동안 만든 전기의 양입니다. 100 kW 발전소가 한 시간 내내 최대로 돌면 100 kWh가 나옵니다. 발전소 크기는 kW, 예측값은 kWh입니다.</dd></div>
+  <div><dt>설비용량</dt><dd>발전소가 낼 수 있는 최대 출력(kW). 팀 나누기의 20,000 kW 조건은 이 값의 합으로 판단합니다.</dd></div>
+  <div><dt>설비이용률</dt><dd>실제 발전량을 설비용량으로 나눈 값. 크기가 다른 발전소를 같은 잣대로 비교할 때 씁니다. 253개 발전소의 1년 평균은 약 16%입니다.</dd></div>
+  <div><dt>하루 전 예측</dt><dd>대상일 전날 정해진 시각(이 대회는 17시)까지 다음 날 시간별 발전량을 미리 신고하는 것. 전력시장의 기본 거래 방식입니다.</dd></div>
+  <div><dt>벌금 가중치 k</dt><dd>시각마다 벌금에 곱하는 배수. 11시부터 15시까지는 3, 나머지는 1입니다. 태양광이 가장 많이 나오는 시간대를 더 무겁게 평가하는 장치입니다.</dd></div>
+  <div><dt>예보 라운드</dt><dd>기상 회사가 예보를 발행한 시각. round 10은 전날 10시, round 17은 전날 17시 발행분입니다. 둘 다 예측 마감 전에 나온 것이라 쓸 수 있습니다.</dd></div>
+  <div><dt>관측지점</dt><dd>기상 회사가 예보와 측정을 제공하는 지점. 발전소마다 가장 가까운 지점이 하나씩 연결되어 있고, 멀면 15 km까지 떨어져 있습니다.</dd></div>
+  <div><dt>우측닫힘</dt><dd>시각 표기 방식. "13:00"이라고 적힌 값은 12시부터 13시까지 한 시간 동안의 양입니다.</dd></div>
+</dl>
+
+<h2><span class="num">10</span>아직 확인되지 않은 것</h2>
+<p>이 글은 데이터 안내문과 기준 코드, 대회 웹페이지만으로 정리한 것입니다. 안내문은 "식과 동점 처리, 제출 횟수는 문제정의서에 있다"고 적고 있지만 그 문서는 아직 공개되지 않았습니다. 공개되면 다음을 확인해야 합니다.</p>
+<ul>
+  <li>점수식의 정확한 형태와, 매출 부분이 정말 순위에 영향을 주지 않는지.</li>
+  <li>동점일 때 순위를 가르는 기준.</li>
+  <li>제출 파일이 무효가 되는 조건의 전체 목록.</li>
+  <li>평가 기간의 전기값을 예측 재료로 쓰는 것이 허용되는지. 전기값은 전국 태양광 생산량과 약하게 연관되어 있어, 벌금 계산 용도 외에 예측 입력으로 쓰면 규정 위반 소지가 있습니다.</li>
+  <li>20,000 kW 조건이 실제 제도에서 온 것인지.</li>
+</ul>
+<div class="callout warn"><p>이 글에 나오는 숫자는 제공 데이터에서 직접 계산한 값이고, 점수식 해석과 팀 나누기 원리는 그 식에서 추론한 것입니다. 추론한 부분은 본문에 "추정" 또는 "따라 나온다"고 표시했습니다.</p></div>
+
+<footer class="doc">
+  근거 자료: 제공 데이터 안내문(README.md), 기준 코드(baseline.py), 대회 웹페이지 dataen.ai/challenge/2026 (2026년 10월 7일 확인). 발전량·전기값 관련 수치는 제공된 학습 데이터와 평가 기간 SMP 파일에서 계산했습니다.
+</footer>
+</div>
+
+<script>
+(function(){
+  var data=[0,0,0,0,0,0,0.1,0.6,2.3,5.6,9.4,12.3,13.9,14.2,13.5,11.6,8.6,5.2,2.2,0.6,0.1,0,0,0];
+  var svg=document.getElementById('hourChart'); if(!svg) return;
+  var W=640,H=260,m={t:18,r:12,b:34,l:44};
+  var pw=W-m.l-m.r, ph=H-m.t-m.b, ymax=15, slot=pw/24, bw=Math.min(16,slot-6);
+  function y(v){return m.t+ph-(v/ymax)*ph;}
+  function f1(n){return n.toFixed(1);}
+  var s='';
+  [0,5,10,15].forEach(function(v){
+    s+='<line class="grid" x1="'+m.l+'" x2="'+(W-m.r)+'" y1="'+f1(y(v))+'" y2="'+f1(y(v))+'"/>';
+    s+='<text class="tick" x="'+(m.l-8)+'" y="'+f1(y(v)+4)+'" text-anchor="end">'+v+'%</text>';
+  });
+  var base=y(0);
+  data.forEach(function(v,h){
+    var x=m.l+h*slot+(slot-bw)/2, top=y(v), hgt=base-top, k3=(h>=11&&h<=15);
+    if(hgt>0){
+      var r=Math.min(4,hgt/2);
+      s+='<path class="'+(k3?'bar-k3':'bar-k1')+'" d="M'+f1(x)+','+f1(base)+' V'+f1(top+r)+' a'+r+','+r+' 0 0 1 '+r+',-'+r+' H'+f1(x+bw-r)+' a'+r+','+r+' 0 0 1 '+r+','+r+' V'+f1(base)+' Z"/>';
+    }
+    if(h%3===0) s+='<text class="tick" x="'+f1(m.l+h*slot+slot/2)+'" y="'+(H-m.b+18)+'" text-anchor="middle">'+h+'시</text>';
+  });
+  s+='<line class="axis" x1="'+m.l+'" x2="'+(W-m.r)+'" y1="'+f1(base)+'" y2="'+f1(base)+'"/>';
+  s+='<text class="label" x="'+f1(m.l+13*slot+slot/2)+'" y="'+f1(y(data[13])-8)+'" text-anchor="middle">14.2%</text>';
+  data.forEach(function(v,h){
+    s+='<rect class="hit" data-h="'+h+'" x="'+f1(m.l+h*slot)+'" y="'+m.t+'" width="'+f1(slot)+'" height="'+ph+'" fill="transparent"/>';
+  });
+  svg.innerHTML=s;
+
+  var tip=document.getElementById('hourTip');
+  function rangeLabel(h){return h===0?'23시~24시':(h-1)+'시~'+h+'시';}
+  svg.addEventListener('mousemove',function(e){
+    var t=e.target.closest?e.target.closest('.hit'):null;
+    if(!t){tip.hidden=true;return;}
+    var h=+t.getAttribute('data-h'), k3=(h>=11&&h<=15);
+    tip.textContent=rangeLabel(h)+' · 연간 발전량의 '+data[h].toFixed(1)+'% · 벌금 가중치 '+(k3?3:1);
+    var r=svg.parentElement.getBoundingClientRect();
+    tip.style.left=(e.clientX-r.left)+'px'; tip.style.top=(e.clientY-r.top-10)+'px';
+    tip.hidden=false;
+  });
+  svg.addEventListener('mouseleave',function(){tip.hidden=true;});
+
+  var tb=document.getElementById('hourTable'); if(tb){
+    var rows='';
+    data.forEach(function(v,h){
+      var k3=(h>=11&&h<=15);
+      rows+='<tr><td>'+rangeLabel(h)+'</td><td class="n">'+v.toFixed(1)+'%</td><td class="n">'+(k3?3:1)+'</td></tr>';
+    });
+    tb.innerHTML=rows;
+  }
+})();
+</script>
