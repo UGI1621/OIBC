@@ -1,0 +1,46 @@
+{
+ "models": [
+  {
+   "model": "model_big_test_s0.pt",
+   "seed": 0,
+   "best_epoch": 3,
+   "mae": 12.253,
+   "team_rel_pct": 12.808
+  },
+  {
+   "model": "model_big_test_s1.pt",
+   "seed": 1,
+   "best_epoch": 4,
+   "mae": 12.137,
+   "team_rel_pct": 12.345
+  },
+  {
+   "model": "model_big_test_s2.pt",
+   "seed": 2,
+   "best_epoch": 3,
+   "mae": 12.092,
+   "team_rel_pct": 12.184
+  }
+ ],
+ "seed_mae_mean": 12.160666666666666,
+ "seed_mae_std": 0.0678249380554247,
+ "ensemble_mae": 11.913,
+ "ensemble_team_rel_pct": 12.145,
+ "error_corr": [
+  [
+   1.0,
+   0.9678,
+   0.969
+  ],
+  [
+   0.9678,
+   1.0,
+   0.9605
+  ],
+  [
+   0.969,
+   0.9605,
+   1.0
+  ]
+ ]
+}

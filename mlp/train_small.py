@@ -1,0 +1,214 @@
+"""작은 신경망 학습 (공부용 단일 파일).
+
+  python mlp/train_small.py            # 홀드아웃 1년(2024-06~2025-05)으로 테스트 점수 확인
+  python mlp/train_small.py --final    # 학습 구간 전체로 학습해 제출용 모델 저장
+
+train_big.py 와 뼈대가 같고, 맨 위 CONFIG 만 다르다.
+데이터 이름: 학습(train) / 검증(val, 조기 종료용 두 달) / 테스트(test, 홀드아웃 1년).
+"""
+from __future__ import annotations
+
+import argparse
+import copy
+import json
+
+import numpy as np
+import pandas as pd
+import torch
+import torch.nn as nn
+
+from common import B, KST, OUT, Scaler, build_train_frame, log, site_index
+
+# ----------------------------------------------------------------------------- 설정
+# 하이퍼파라미터. 값을 바꾸면 파일 이름(name)도 같이 바꿔 두면 산출물이 섞이지 않는다.
+CONFIG = dict(
+    name="small",
+
+    # 은닉층 구조. 튜플 원소 하나가 층 하나, 숫자가 그 층의 뉴런 수.
+    #   입력 24(수치) + 8(임베딩) = 32 -> 128 -> 64 -> 1(출력).
+    #   층을 넓히거나 더하면 표현력이 커지지만 과적합이 빨라지고 에폭당 시간이 늘어난다.
+    #   (128, 64)는 파라미터 1.5만 개, 에폭당 1초. train_big.py 는 (512, 512, 256), 42만 개, 11초.
+    #   4층 이상은 잔차 연결 없이는 보통 득이 없다.
+    hidden=(128, 64),
+
+    # 발전소 임베딩 차원. 발전소 253개 각각에 이 길이의 벡터를 배워 입력에 붙인다.
+    #   발전소별 편향·성향을 흡수하는 역할. 0이면 임베딩을 안 쓴다(common.MLP 는 0 허용, 이 파일의 Net 은 1 이상).
+    #   기존 실험: 임베딩 없음 12.66 -> 8차원 12.31. 8~16 사이면 충분하고 더 키워도 득이 없었다.
+    emb_dim=8,
+
+    # 드롭아웃 비율. 학습 중 각 은닉 뉴런을 이 확률로 무작위로 꺼서 과적합을 늦춘다.
+    #   0이면 사용 안 함. 작은 망은 외울 용량이 적어 0, 큰 망은 0.1.
+    #   올리면 검증 MAE가 에폭 사이에 더 흔들리므로 patience 를 같이 올린다.
+    dropout=0.0,
+
+    # 시작 학습률. 가중치를 한 번에 얼마나 옮길지.
+    #   코사인 스케줄이 이 값에서 시작해 epochs 에 걸쳐 0까지 줄인다. 조기 종료로 일찍 멈추면 아직 큰 상태.
+    #   관찰: 2e-3 은 검증 MAE가 에폭마다 ±0.3 흔들림, 1e-3 은 순하고 과적합 뒤 상승도 작음. 최저점은 둘 다 12.4 근처.
+    #   너무 크면 손실이 안 내려가거나 튀고, 너무 작으면 에폭을 훨씬 많이 돌아야 한다. 배치를 키우면 같이 키운다.
+    lr=2e-3,
+
+    # 가중치 감쇠(L2 규제). 매 갱신마다 가중치를 이 비율만큼 0 쪽으로 당긴다.
+    #   1e-5 는 사실상 거의 안 거는 수준. 과적합을 더 누르고 싶으면 1e-4 ~ 1e-3.
+    weight_decay=1e-5,
+
+    # 미니배치 크기. 한 번의 가중치 갱신에 쓰는 행 수.
+    #   학습 476,111행 / 4096 = 에폭당 117번 갱신. 작게 하면 갱신이 잦고 흔들림이 커지며 느려진다.
+    #   크게 하면 빠르지만 같은 에폭으로 덜 배우고 lr 을 같이 키워야 한다. 4배 키우면 lr 2~4배.
+    batch_size=4096,
+
+    # 최대 에폭 수. 조기 종료가 먼저 걸리면 거기서 끝난다.
+    #   코사인 스케줄의 길이이기도 해서, 이 값을 바꾸면 학습률이 줄어드는 속도도 바뀐다.
+    #   관찰: 조기 종료 없이 40 돌리면 6에폭 뒤 과적합(12.37 -> 13.05).
+    epochs=40,
+
+    # 조기 종료 인내. 검증 MAE 최저가 이만큼 연속 에폭 동안 갱신되지 않으면 멈추고 최저 시점 가중치로 되돌린다.
+    #   작으면 우연한 저점에서 일찍 멈춘다(2에폭 선택 사례). 크면 더 기다리지만 시간이 늘고 과적합 구간까지 갈 수 있다.
+    #   검증 세트가 두 달치라 흔들림이 커서 8~10이 더 안전. 드롭아웃을 쓰면 더 올린다.
+    patience=6,
+
+    # 사용할 예보 발행 라운드. 10 = 전일 10시, 17 = 전일 17시. 둘 다 예측 시점(전일 17시) 이전이라 허용.
+    #   17이 더 최신이라 기본. 베이스라인은 두 라운드 모델을 평균한다.
+    round=17,
+
+    # 학습 시작일. 발전량 데이터는 2021-01부터 있지만 베이스라인과 같이 최근 2년만 쓴다.
+    #   앞당기면 행이 늘지만 오래된 데이터라 분포가 다를 수 있다. 48개소는 2024-06 이후에만 데이터가 있다.
+    train_from="2023-06-01",
+)
+# 코드 안에 박힌 값들(바꿀 일은 적지만 알아둘 것):
+#   - 5%: 배치마다 발전소 번호의 5%를 0번('모르는 발전소')으로 바꿔 0번 임베딩도 학습시킨다 (학습 루프).
+#   - 1e-4: 검증 MAE가 이보다 작게 좋아진 건 '갱신'으로 치지 않는다 (조기 종료 판단).
+#   - ±6: 전처리에서 표준화된 값을 자르는 범위 (common.Scaler).
+#   - 0~1.2: 타깃 이용률의 clip 범위 (common.build_train_frame).
+#   - 2024-04-01 / 2024-06-01: 검증·테스트 분할 경계. --final 이면 2025-04-01 부터 검증.
+# ------------------------------------------------------------------------------------
+
+ap = argparse.ArgumentParser()
+ap.add_argument("--final", action="store_true", help="학습 구간 전체로 학습 (제출용)")
+ap.add_argument("--seed", type=int, default=0)
+args = ap.parse_args()
+torch.manual_seed(args.seed)
+np.random.seed(args.seed)
+C = CONFIG
+
+# 1. 데이터 ---------------------------------------------------------------------------
+# 행 하나 = (발전소, 시각). 주간(elev>0)만. 타깃 y = 발전량 / 설비용량 (0~1.2)
+d, sites = build_train_frame(pd.Timestamp(f"{C['train_from']} 01:00", tz=KST), C["round"])
+ts = d.ts
+if args.final:
+    VAL_FROM, TEST_FROM = pd.Timestamp("2025-04-01 01:00", tz=KST), None
+else:
+    VAL_FROM, TEST_FROM = pd.Timestamp("2024-04-01 01:00", tz=KST), pd.Timestamp("2024-06-01 01:00", tz=KST)
+train = (ts < VAL_FROM).values
+val = ((ts >= VAL_FROM) & (ts < TEST_FROM)).values if TEST_FROM is not None else (ts >= VAL_FROM).values
+test = (ts >= TEST_FROM).values if TEST_FROM is not None else np.zeros(len(d), bool)
+log(f"[{C['name']}] hidden={C['hidden']} emb={C['emb_dim']} drop={C['dropout']} lr={C['lr']} seed={args.seed}")
+log(f"rows {len(d):,} | train {train.sum():,} | val {val.sum():,} | test {test.sum():,}")
+
+# 2. 전처리 ---------------------------------------------------------------------------
+# 수치 24개: 학습 행 통계로 NaN->중앙값, 표준화, ±6 clip. 임베딩 인덱스는 그대로.
+F = d[B.FEATS].astype("float32").values
+y = d.y.values.astype("float32")
+cap = d.cap.values.astype("float32")
+scaler = Scaler().fit(F[train])
+X = scaler.transform(F)
+smap = site_index(sites, set(d.site_id[train].unique()))   # 학습에 없던 발전소는 0번 토큰
+sidx = d.site_id.map(smap).values.astype("int64")
+
+
+def tensors(mask):
+    return torch.tensor(X[mask]), torch.tensor(y[mask]), torch.tensor(sidx[mask])
+
+
+Xt, yt, st = tensors(train)
+Xv, yv, sv = tensors(val)
+cv = cap[val]
+
+
+# 3. 모델 -----------------------------------------------------------------------------
+class Net(nn.Module):
+    """수치 입력(24) + 발전소 임베딩(emb_dim) -> [Linear -> ReLU (-> Dropout)] x 층 수 -> Linear -> 1.
+    속성 이름(emb, net)은 common.MLP 와 같게 두어 predict.py 가 그대로 불러온다."""
+
+    def __init__(self, n_in, hidden, emb_dim, dropout, n_sites=254):
+        super().__init__()
+        self.emb = nn.Embedding(n_sites, emb_dim)          # 발전소별로 배우는 보정 벡터
+        layers, k = [], n_in + emb_dim
+        for h in hidden:
+            layers += [nn.Linear(k, h), nn.ReLU()]           # bias 는 Linear 기본값(True)
+            if dropout:
+                layers.append(nn.Dropout(dropout))
+            k = h
+        layers.append(nn.Linear(k, 1))                       # 출력 1개 = 이용률, 활성함수 없음
+        self.net = nn.Sequential(*layers)
+
+    def forward(self, x, site):
+        return self.net(torch.cat([x, self.emb(site)], 1)).squeeze(1)
+
+
+model = Net(X.shape[1], C["hidden"], C["emb_dim"], C["dropout"])
+n_params = sum(p.numel() for p in model.parameters())
+log(f"parameters {n_params:,}")
+opt = torch.optim.AdamW(model.parameters(), lr=C["lr"], weight_decay=C["weight_decay"])
+sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=C["epochs"])
+loss_fn = nn.L1Loss()                                       # 벌금이 |예측-실적| 이므로 L1
+
+
+def val_mae(m):
+    m.eval()
+    with torch.no_grad():
+        p = np.clip(m(Xv, sv).numpy(), 0, None)
+    return float((np.abs(p - yv.numpy()) * cv).mean())      # kWh 단위
+
+
+# 4. 학습 루프 ------------------------------------------------------------------------
+best = dict(mae=np.inf, state=None, epoch=0)
+bad, n, history = 0, len(Xt), []
+for ep in range(1, C["epochs"] + 1):
+    model.train()
+    perm = torch.randperm(n)                                 # 에폭마다 새로 섞는다
+    tot = 0.0
+    for i in range(0, n, C["batch_size"]):                   # 미니배치 한 바퀴
+        b = perm[i:i + C["batch_size"]]
+        site_b = st[b].clone()
+        site_b[torch.rand(len(site_b)) < 0.05] = 0           # 5%는 '모르는 발전소'로 바꿔 0번 임베딩도 학습
+        opt.zero_grad()
+        loss = loss_fn(model(Xt[b], site_b), yt[b])          # 순전파 + 손실
+        loss.backward()                                      # 역전파
+        opt.step()                                           # 가중치 갱신
+        tot += loss.item() * len(b)
+    sched.step()                                             # 학습률 한 단계 감소
+    mae = val_mae(model)
+    history.append(dict(epoch=ep, train_l1=tot / n, val_mae=mae, lr=opt.param_groups[0]["lr"]))
+    log(f"epoch {ep:2d}  train L1 {tot / n:.4f}  val MAE {mae:.3f} kWh")
+    if mae < best["mae"] - 1e-4:                             # 좋아졌으면 가중치 복사해 두기
+        best = dict(mae=mae, state=copy.deepcopy(model.state_dict()), epoch=ep)
+        bad = 0
+    else:
+        bad += 1
+        if bad >= C["patience"]:
+            log(f"early stop at epoch {ep}")
+            break
+model.load_state_dict(best["state"])                         # 최저 시점 가중치로 복원
+model.eval()
+log(f"best epoch {best['epoch']}  val MAE {best['mae']:.3f} kWh")
+
+# 5. 테스트 점수 (홀드아웃 1년, --final 이 아닐 때만) ----------------------------------
+if test.any():
+    Xs, ys, ss = tensors(test)
+    cs = cap[test]
+    with torch.no_grad():
+        p = np.clip(model(Xs, ss).numpy(), 0, None)
+    ys = ys.numpy()
+    mae = float((np.abs(p - ys) * cs).mean())
+    g = pd.DataFrame({"ts": ts[test].values, "p": p * cs, "a": ys * cs}).groupby("ts").sum()
+    rel = float(np.abs(g.p - g.a).sum() / g.a.sum())
+    log(f"TEST 2024-06~2025-05  MAE {mae:.2f} kWh/site-hour  팀 합계 상대오차 {rel * 100:.2f}%")
+
+# 6. 저장 -----------------------------------------------------------------------------
+tag = "final" if args.final else "test"
+path = OUT / f"model_{C['name']}_{tag}_s{args.seed}.pt"
+torch.save({"state": model.state_dict(), "hidden": tuple(C["hidden"]), "emb": C["emb_dim"], "drop": C["dropout"],
+            "nin": X.shape[1], "scaler": scaler.state(), "smap": smap, "feats": list(B.FEATS),
+            "round": C["round"], "config": C, "seed": args.seed, "best_epoch": best["epoch"]}, path)
+(OUT / f"history_{C['name']}_{tag}_s{args.seed}.json").write_text(json.dumps(history, indent=1), encoding="utf-8")
+log(f"saved {path}")

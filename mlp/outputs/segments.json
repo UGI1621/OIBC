@@ -1,0 +1,348 @@
+{
+ "model": "model_val_r17_s0.pt",
+ "val_from": "2024-06-01",
+ "val_to": "2025-05-31",
+ "overall": {
+  "mae": 12.585,
+  "bias_pct": 1.741,
+  "team_rel_pct": 13.154,
+  "penalty_krw": 217310537,
+  "revenue_krw": 7490414702
+ },
+ "hour": [
+  {
+   "key": "5",
+   "n": NaN,
+   "mae": NaN,
+   "bias_pct": NaN,
+   "team_rel_pct": NaN,
+   "pen_share_pct": NaN,
+   "energy_share_pct": NaN
+  },
+  {
+   "key": "6",
+   "n": 16421.0,
+   "mae": 1.404,
+   "bias_pct": 30.346,
+   "team_rel_pct": 46.749,
+   "pen_share_pct": 0.052,
+   "energy_share_pct": 0.043
+  },
+  {
+   "key": "7",
+   "n": 47778.0,
+   "mae": 2.93,
+   "bias_pct": 2.936,
+   "team_rel_pct": 24.137,
+   "pen_share_pct": 0.41,
+   "energy_share_pct": 0.568
+  },
+  {
+   "key": "8",
+   "n": 75823.0,
+   "mae": 5.782,
+   "bias_pct": 1.301,
+   "team_rel_pct": 17.526,
+   "pen_share_pct": 1.266,
+   "energy_share_pct": 2.272
+  },
+  {
+   "key": "9",
+   "n": 90421.0,
+   "mae": 9.888,
+   "bias_pct": 1.234,
+   "team_rel_pct": 14.072,
+   "pen_share_pct": 2.654,
+   "energy_share_pct": 5.607
+  },
+  {
+   "key": "10",
+   "n": 90428.0,
+   "mae": 14.196,
+   "bias_pct": 1.857,
+   "team_rel_pct": 12.755,
+   "pen_share_pct": 4.238,
+   "energy_share_pct": 9.407
+  },
+  {
+   "key": "11",
+   "n": 90439.0,
+   "mae": 16.353,
+   "bias_pct": 3.16,
+   "team_rel_pct": 11.755,
+   "pen_share_pct": 15.581,
+   "energy_share_pct": 12.345
+  },
+  {
+   "key": "12",
+   "n": 90442.0,
+   "mae": 18.142,
+   "bias_pct": 4.749,
+   "team_rel_pct": 11.868,
+   "pen_share_pct": 17.298,
+   "energy_share_pct": 13.911
+  },
+  {
+   "key": "13",
+   "n": 90445.0,
+   "mae": 18.893,
+   "bias_pct": 4.862,
+   "team_rel_pct": 12.161,
+   "pen_share_pct": 16.941,
+   "energy_share_pct": 14.256
+  },
+  {
+   "key": "14",
+   "n": 90448.0,
+   "mae": 18.359,
+   "bias_pct": 3.656,
+   "team_rel_pct": 12.483,
+   "pen_share_pct": 17.084,
+   "energy_share_pct": 13.475
+  },
+  {
+   "key": "15",
+   "n": 90450.0,
+   "mae": 17.047,
+   "bias_pct": 1.414,
+   "team_rel_pct": 12.803,
+   "pen_share_pct": 15.295,
+   "energy_share_pct": 11.567
+  },
+  {
+   "key": "16",
+   "n": 90456.0,
+   "mae": 14.526,
+   "bias_pct": -1.743,
+   "team_rel_pct": 13.99,
+   "pen_share_pct": 4.239,
+   "energy_share_pct": 8.628
+  },
+  {
+   "key": "17",
+   "n": 90465.0,
+   "mae": 9.898,
+   "bias_pct": -6.764,
+   "team_rel_pct": 15.383,
+   "pen_share_pct": 2.774,
+   "energy_share_pct": 5.171
+  },
+  {
+   "key": "18",
+   "n": 70691.0,
+   "mae": 6.304,
+   "bias_pct": -14.643,
+   "team_rel_pct": 20.223,
+   "pen_share_pct": 1.542,
+   "energy_share_pct": 2.146
+  },
+  {
+   "key": "19",
+   "n": 44621.0,
+   "mae": 3.326,
+   "bias_pct": -23.362,
+   "team_rel_pct": 27.632,
+   "pen_share_pct": 0.549,
+   "energy_share_pct": 0.557
+  },
+  {
+   "key": "20",
+   "n": 13971.0,
+   "mae": 1.441,
+   "bias_pct": -40.688,
+   "team_rel_pct": 45.694,
+   "pen_share_pct": 0.073,
+   "energy_share_pct": 0.045
+  }
+ ],
+ "month": [
+  {
+   "key": "2024-06",
+   "n": 95671.0,
+   "mae": 11.238,
+   "bias_pct": 2.734,
+   "team_rel_pct": 12.246,
+   "pen_share_pct": 7.909,
+   "energy_share_pct": 8.827
+  },
+  {
+   "key": "2024-07",
+   "n": 106535.0,
+   "mae": 13.464,
+   "bias_pct": -10.831,
+   "team_rel_pct": 18.383,
+   "pen_share_pct": 11.096,
+   "energy_share_pct": 7.755
+  },
+  {
+   "key": "2024-08",
+   "n": 101205.0,
+   "mae": 13.127,
+   "bias_pct": 1.605,
+   "team_rel_pct": 10.146,
+   "pen_share_pct": 9.459,
+   "energy_share_pct": 10.286
+  },
+  {
+   "key": "2024-09",
+   "n": 94314.0,
+   "mae": 14.124,
+   "bias_pct": 5.722,
+   "team_rel_pct": 16.591,
+   "pen_share_pct": 11.239,
+   "energy_share_pct": 8.05
+  },
+  {
+   "key": "2024-10",
+   "n": 86849.0,
+   "mae": 12.383,
+   "bias_pct": 3.394,
+   "team_rel_pct": 16.137,
+   "pen_share_pct": 7.924,
+   "energy_share_pct": 6.665
+  },
+  {
+   "key": "2024-11",
+   "n": 75522.0,
+   "mae": 12.027,
+   "bias_pct": 1.386,
+   "team_rel_pct": 15.259,
+   "pen_share_pct": 7.015,
+   "energy_share_pct": 6.051
+  },
+  {
+   "key": "2024-12",
+   "n": 72419.0,
+   "mae": 11.242,
+   "bias_pct": 3.503,
+   "team_rel_pct": 10.584,
+   "pen_share_pct": 5.725,
+   "energy_share_pct": 6.548
+  },
+  {
+   "key": "2025-01",
+   "n": 74817.0,
+   "mae": 12.11,
+   "bias_pct": 7.701,
+   "team_rel_pct": 12.492,
+   "pen_share_pct": 6.45,
+   "energy_share_pct": 6.57
+  },
+  {
+   "key": "2025-02",
+   "n": 76939.0,
+   "mae": 13.429,
+   "bias_pct": 4.708,
+   "team_rel_pct": 12.339,
+   "pen_share_pct": 7.985,
+   "energy_share_pct": 8.445
+  },
+  {
+   "key": "2025-03",
+   "n": 92051.0,
+   "mae": 12.38,
+   "bias_pct": 3.63,
+   "team_rel_pct": 10.924,
+   "pen_share_pct": 6.625,
+   "energy_share_pct": 9.265
+  },
+  {
+   "key": "2025-04",
+   "n": 98670.0,
+   "mae": 12.59,
+   "bias_pct": 0.203,
+   "team_rel_pct": 11.424,
+   "pen_share_pct": 8.606,
+   "energy_share_pct": 11.151
+  },
+  {
+   "key": "2025-05",
+   "n": 108307.0,
+   "mae": 12.416,
+   "bias_pct": -0.851,
+   "team_rel_pct": 13.747,
+   "pen_share_pct": 9.967,
+   "energy_share_pct": 10.387
+  }
+ ],
+ "capacity": [
+  {
+   "key": "~100kW",
+   "sites": 203,
+   "n": 873967,
+   "mae": 6.316,
+   "util_mae_pct": 7.44,
+   "bias_pct": -0.089,
+   "abs_err_share_pct": 40.488,
+   "energy_share_pct": 42.738
+  },
+  {
+   "key": "100~300kW",
+   "sites": 19,
+   "n": 79012,
+   "mae": 17.625,
+   "util_mae_pct": 8.06,
+   "bias_pct": -1.131,
+   "abs_err_share_pct": 10.214,
+   "energy_share_pct": 9.9
+  },
+  {
+   "key": "300~700kW",
+   "sites": 18,
+   "n": 77346,
+   "mae": 34.529,
+   "util_mae_pct": 7.458,
+   "bias_pct": 2.351,
+   "abs_err_share_pct": 19.589,
+   "energy_share_pct": 19.974
+  },
+  {
+   "key": "700kW~",
+   "sites": 13,
+   "n": 52974,
+   "mae": 76.461,
+   "util_mae_pct": 7.738,
+   "bias_pct": 5.188,
+   "abs_err_share_pct": 29.709,
+   "energy_share_pct": 27.389
+  }
+ ],
+ "cloud": [
+  {
+   "key": "맑음 0~20",
+   "n": 341903,
+   "mae": 10.395,
+   "util_mae_pct": 5.811,
+   "bias_pct": 5.662,
+   "abs_err_share_pct": 26.067,
+   "row_share_pct": 31.561
+  },
+  {
+   "key": "구름조금 20~50",
+   "n": 123506,
+   "mae": 12.71,
+   "util_mae_pct": 7.515,
+   "bias_pct": 5.761,
+   "abs_err_share_pct": 11.513,
+   "row_share_pct": 11.401
+  },
+  {
+   "key": "구름많음 50~80",
+   "n": 136271,
+   "mae": 14.293,
+   "util_mae_pct": 8.633,
+   "bias_pct": 2.154,
+   "abs_err_share_pct": 14.286,
+   "row_share_pct": 12.579
+  },
+  {
+   "key": "흐림 80~100",
+   "n": 481619,
+   "mae": 13.626,
+   "util_mae_pct": 8.377,
+   "bias_pct": -4.867,
+   "abs_err_share_pct": 48.133,
+   "row_share_pct": 44.459
+  }
+ ]
+}

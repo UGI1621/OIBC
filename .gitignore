@@ -18,3 +18,7 @@ Thumbs.db
 
 # 편집기 개인 설정
 .vscode/
+
+# MLP 프로젝트 산출물 (mlp/train.py, predict.py 로 재생성 가능)
+mlp/outputs/*.pt
+mlp/outputs/*.log
