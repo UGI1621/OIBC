@@ -48,7 +48,7 @@ for seed in seeds:
                   random_state=seed, objective=args.objective)   # baseline.py 와 동일 (+objective, seed)
     t0 = time.time()
     model = lgb.LGBMRegressor(**params).fit(X[train], y[train])
-    sfx = "" if seed == 0 else f"_s{seed}"
+    sfx = ("" if args.round == 17 else f"_r{args.round}") + ("" if seed == 0 else f"_s{seed}")
     if test.any():
         p = np.clip(model.predict(X[test]), 0, None)
         yt = y[test]; ct = cap[test]
