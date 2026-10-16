@@ -26,6 +26,8 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--model", default=None, help="모델 파일 하나")
 ap.add_argument("--models", default=None, help="쉼표로 구분한 모델 파일 여러 개. 예측(이용률)을 평균한다")
 ap.add_argument("--composition", choices=["snake", "ref"], default="snake")
+ap.add_argument("--gbdt", default=None, help="GBDT 최종 예측 parquet glob (예: 'gbdt_l1_final_pred*.parquet'). 여러 개면 평균")
+ap.add_argument("--w-mlp", type=float, default=0.7, help="--gbdt 가 있을 때 MLP 가중치. GBDT 는 1 - w")
 args = ap.parse_args()
 
 if args.models:
@@ -57,6 +59,18 @@ for p, ck in zip(paths, cks):
     preds.append(np.clip(np.concatenate(out), 0, None))
     log(f"  {p.name}: best epoch {ck.get('best_epoch')}, mean util {preds[-1].mean():.4f}")
 p = np.mean(preds, axis=0)                       # 시드 앙상블 = 이용률 평균
+if args.gbdt:
+    gpaths = sorted(OUT.glob(args.gbdt))
+    assert gpaths, f"GBDT 예측 없음: {args.gbdt}"
+    key = pd.DataFrame({"site_id": d.site_id.values, "ts": d.ts.values})
+    gps = []
+    for gp in gpaths:
+        v = key.merge(pd.read_parquet(gp), on=["site_id", "ts"], how="left").p.values
+        assert not np.isnan(v).any(), gp
+        gps.append(v)
+    pg = np.mean(gps, axis=0)
+    log(f"blend: MLP {args.w_mlp:.2f} + GBDT {1 - args.w_mlp:.2f} ({len(gpaths)} files, mean util {pg.mean():.4f})")
+    p = args.w_mlp * p + (1 - args.w_mlp) * pg
 p = np.where(d.elev.values > 0, p, 0.0)          # 야간은 0으로 고정
 d["kwh"] = p * d.cap.values
 log(f"predicted {len(d):,} rows ({d.site_id.nunique()} sites x {len(index):,} h), total {d.kwh.sum() / 1e6:.2f} GWh")

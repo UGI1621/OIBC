@@ -19,6 +19,7 @@ from common import KST, OUT, MLP, Scaler, build_train_frame, log
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--models", default=None)
+ap.add_argument("--blend", default=None, help="GBDT 테스트 예측 parquet (gbdt.py 출력). MLP 평균과 섞은 점수도 낸다")
 args = ap.parse_args()
 paths = [Path(p) for p in args.models.split(",")] if args.models else sorted(OUT.glob("model_big_test_s*.pt"))
 assert paths, "모델 없음"
@@ -64,5 +65,20 @@ if len(preds) > 1:
 summary = {"models": rows, "seed_mae_mean": float(maes.mean()), "seed_mae_std": float(maes.std(ddof=0)),
            "ensemble_mae": round(ens_mae, 3), "ensemble_team_rel_pct": round(ens_rel, 3),
            "error_corr": corr.round(4).tolist()}
+
+if args.blend:
+    gb = pd.read_parquet(args.blend)
+    key = pd.DataFrame({"site_id": d.site_id.values, "ts": ts})
+    pg = key.merge(gb, on=["site_id", "ts"], how="left").p.values
+    assert not np.isnan(pg).any(), "GBDT 예측과 행이 안 맞음"
+    pm = np.mean(preds, axis=0)
+    g_mae, g_rel = score(pg)
+    log(f"GBDT 단독          MAE {g_mae:.3f} kWh  팀 합계 {g_rel:.2f}%   (MLP 평균과 오차 상관 "
+        f"{np.corrcoef((pg - y) * cap, (pm - y) * cap)[0, 1]:.3f})")
+    summary["blend"] = {"gbdt_mae": round(g_mae, 3), "gbdt_team_rel_pct": round(g_rel, 3), "weights": {}}
+    for w in (0.3, 0.5, 0.7):
+        b_mae, b_rel = score((1 - w) * pg + w * pm)
+        log(f"GBDT {1 - w:.1f} + MLP {w:.1f}  MAE {b_mae:.3f} kWh  팀 합계 {b_rel:.2f}%")
+        summary["blend"]["weights"][str(w)] = {"mae": round(b_mae, 3), "team_rel_pct": round(b_rel, 3)}
 (OUT / "ensemble_test.json").write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding="utf-8")
 log(f"saved {OUT / 'ensemble_test.json'}")
