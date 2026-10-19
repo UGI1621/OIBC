@@ -1,0 +1,2640 @@
+{
+ "$schema": "https://raw.githubusercontent.com/dineug/erd-editor/main/json-schema/schema.json",
+ "version": "3.0.0",
+ "settings": {
+  "width": 2800,
+  "height": 1200,
+  "scrollTop": 0,
+  "scrollLeft": 0,
+  "zoomLevel": 0.7,
+  "show": 431,
+  "database": 16,
+  "databaseName": "oibc_2026",
+  "canvasType": "ERD",
+  "language": 1,
+  "tableNameCase": 1,
+  "columnNameCase": 1,
+  "bracketType": 1,
+  "relationshipDataTypeSync": true,
+  "relationshipOptimization": false,
+  "columnOrder": [
+   1,
+   2,
+   4,
+   8,
+   16,
+   32,
+   64
+  ],
+  "maxWidthComment": -1,
+  "ignoreSaveSettings": 0
+ },
+ "doc": {
+  "tableIds": [
+   "tbl_sites",
+   "tbl_wa_station",
+   "tbl_wb_station",
+   "tbl_generation",
+   "tbl_train_smp",
+   "tbl_smp",
+   "tbl_composition",
+   "tbl_forecast",
+   "tbl_forecast_wa",
+   "tbl_observed_wa",
+   "tbl_forecast_wb",
+   "tbl_observed_wb"
+  ],
+  "relationshipIds": [
+   "rel_wa_station_sites",
+   "rel_wb_station_sites",
+   "rel_sites_generation",
+   "rel_sites_composition",
+   "rel_wa_station_forecast_wa",
+   "rel_wa_station_observed_wa",
+   "rel_wb_station_forecast_wb",
+   "rel_wb_station_observed_wb",
+   "rel_smp_forecast"
+  ],
+  "indexIds": [],
+  "memoIds": [
+   "memo_0",
+   "memo_1",
+   "memo_2",
+   "memo_3",
+   "memo_4"
+  ]
+ },
+ "collections": {
+  "tableEntities": {
+   "tbl_sites": {
+    "id": "tbl_sites",
+    "name": "sites",
+    "comment": "sites.csv · 253행 · 발전소 메타",
+    "columnIds": [
+     "col_sites_site_id",
+     "col_sites_current_group",
+     "col_sites_capacity_kw",
+     "col_sites_lat",
+     "col_sites_lon",
+     "col_sites_wa_station",
+     "col_sites_wb_station",
+     "col_sites_wa_dist",
+     "col_sites_wb_dist"
+    ],
+    "seqColumnIds": [
+     "col_sites_site_id",
+     "col_sites_current_group",
+     "col_sites_capacity_kw",
+     "col_sites_lat",
+     "col_sites_lon",
+     "col_sites_wa_station",
+     "col_sites_wb_station",
+     "col_sites_wa_dist",
+     "col_sites_wb_dist"
+    ],
+    "ui": {
+     "x": 760,
+     "y": 80,
+     "zIndex": 2,
+     "widthName": 60,
+     "widthComment": 221,
+     "color": ""
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "tbl_wa_station": {
+    "id": "tbl_wa_station",
+    "name": "wa_station",
+    "comment": "A사 관측지점 61개. 별도 파일 없음, 키로만 존재",
+    "columnIds": [
+     "col_wa_station_wa_station"
+    ],
+    "seqColumnIds": [
+     "col_wa_station_wa_station"
+    ],
+    "ui": {
+     "x": 60,
+     "y": 80,
+     "zIndex": 2,
+     "widthName": 80,
+     "widthComment": 315,
+     "color": ""
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "tbl_wb_station": {
+    "id": "tbl_wb_station",
+    "name": "wb_station",
+    "comment": "B사 관측지점 73개. 별도 파일 없음, 키로만 존재",
+    "columnIds": [
+     "col_wb_station_wb_station"
+    ],
+    "seqColumnIds": [
+     "col_wb_station_wb_station"
+    ],
+    "ui": {
+     "x": 1700,
+     "y": 80,
+     "zIndex": 2,
+     "widthName": 80,
+     "widthComment": 315,
+     "color": ""
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "tbl_generation": {
+    "id": "tbl_generation",
+    "name": "generation",
+    "comment": "train/generation.parquet · 4,392,566행 · 2021-01-19 13:00 ~ 2025-06-01 00:00 · 평가 구간 없음",
+    "columnIds": [
+     "col_generation_site_id",
+     "col_generation_ts",
+     "col_generation_energy"
+    ],
+    "seqColumnIds": [
+     "col_generation_site_id",
+     "col_generation_ts",
+     "col_generation_energy"
+    ],
+    "ui": {
+     "x": 760,
+     "y": 420,
+     "zIndex": 2,
+     "widthName": 80,
+     "widthComment": 320,
+     "color": ""
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "tbl_train_smp": {
+    "id": "tbl_train_smp",
+    "name": "train_smp",
+    "comment": "train/smp.csv · 38,688행 · 2021-01-01 01:00 ~ 2025-06-01 00:00 · k 열 없음",
+    "columnIds": [
+     "col_train_smp_ts",
+     "col_train_smp_smp"
+    ],
+    "seqColumnIds": [
+     "col_train_smp_ts",
+     "col_train_smp_smp"
+    ],
+    "ui": {
+     "x": 760,
+     "y": 620,
+     "zIndex": 2,
+     "widthName": 73,
+     "widthComment": 320,
+     "color": ""
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "tbl_smp": {
+    "id": "tbl_smp",
+    "name": "smp",
+    "comment": "smp.csv · 8,760행 · 2025-06-01 01:00 ~ 2026-06-01 00:00 · 제출·채점 시각",
+    "columnIds": [
+     "col_smp_ts",
+     "col_smp_smp",
+     "col_smp_k"
+    ],
+    "seqColumnIds": [
+     "col_smp_ts",
+     "col_smp_smp",
+     "col_smp_k"
+    ],
+    "ui": {
+     "x": 1180,
+     "y": 260,
+     "zIndex": 2,
+     "widthName": 60,
+     "widthComment": 320,
+     "color": ""
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "tbl_composition": {
+    "id": "tbl_composition",
+    "name": "composition",
+    "comment": "[제출] composition.csv · 헤더 포함 254행",
+    "columnIds": [
+     "col_composition_site_id",
+     "col_composition_group"
+    ],
+    "seqColumnIds": [
+     "col_composition_site_id",
+     "col_composition_group"
+    ],
+    "ui": {
+     "x": 1180,
+     "y": 80,
+     "zIndex": 2,
+     "widthName": 87,
+     "widthComment": 283,
+     "color": ""
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "tbl_forecast": {
+    "id": "tbl_forecast",
+    "name": "forecast",
+    "comment": "[제출] forecast.csv · 헤더 포함 17,521행 · 그룹별 8,760시각",
+    "columnIds": [
+     "col_forecast_group",
+     "col_forecast_ts",
+     "col_forecast_forecast_kwh"
+    ],
+    "seqColumnIds": [
+     "col_forecast_group",
+     "col_forecast_ts",
+     "col_forecast_forecast_kwh"
+    ],
+    "ui": {
+     "x": 1180,
+     "y": 440,
+     "zIndex": 2,
+     "widthName": 66,
+     "widthComment": 320,
+     "color": ""
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "tbl_forecast_wa": {
+    "id": "tbl_forecast_wa",
+    "name": "forecast_wa",
+    "comment": "train/forecast_wa.parquet 4,710,356행 + test/forecast_wa.parquet 1,068,456행 · 하루전 예보 A · 평가 구간에 빈 행 264개",
+    "columnIds": [
+     "col_forecast_wa_wa_station",
+     "col_forecast_wa_round",
+     "col_forecast_wa_ts",
+     "col_forecast_wa_wa_cloud",
+     "col_forecast_wa_wa_temp",
+     "col_forecast_wa_wa_temp_max",
+     "col_forecast_wa_wa_temp_min",
+     "col_forecast_wa_wa_humidity",
+     "col_forecast_wa_wa_ground_press",
+     "col_forecast_wa_wa_wind_speed",
+     "col_forecast_wa_wa_wind_dir",
+     "col_forecast_wa_wa_rain",
+     "col_forecast_wa_wa_snow"
+    ],
+    "seqColumnIds": [
+     "col_forecast_wa_wa_station",
+     "col_forecast_wa_round",
+     "col_forecast_wa_ts",
+     "col_forecast_wa_wa_cloud",
+     "col_forecast_wa_wa_temp",
+     "col_forecast_wa_wa_temp_max",
+     "col_forecast_wa_wa_temp_min",
+     "col_forecast_wa_wa_humidity",
+     "col_forecast_wa_wa_ground_press",
+     "col_forecast_wa_wa_wind_speed",
+     "col_forecast_wa_wa_wind_dir",
+     "col_forecast_wa_wa_rain",
+     "col_forecast_wa_wa_snow"
+    ],
+    "ui": {
+     "x": 60,
+     "y": 220,
+     "zIndex": 2,
+     "widthName": 87,
+     "widthComment": 320,
+     "color": ""
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "tbl_observed_wa": {
+    "id": "tbl_observed_wa",
+    "name": "observed_wa",
+    "comment": "train/observed_wa.parquet · 2,359,974행 · 실측 기상 A · 학습 구간만, round 없음",
+    "columnIds": [
+     "col_observed_wa_wa_station",
+     "col_observed_wa_ts",
+     "col_observed_wa_wa_cloud",
+     "col_observed_wa_wa_temp",
+     "col_observed_wa_wa_temp_max",
+     "col_observed_wa_wa_temp_min",
+     "col_observed_wa_wa_humidity",
+     "col_observed_wa_wa_ground_press",
+     "col_observed_wa_wa_wind_speed",
+     "col_observed_wa_wa_wind_dir",
+     "col_observed_wa_wa_rain",
+     "col_observed_wa_wa_snow"
+    ],
+    "seqColumnIds": [
+     "col_observed_wa_wa_station",
+     "col_observed_wa_ts",
+     "col_observed_wa_wa_cloud",
+     "col_observed_wa_wa_temp",
+     "col_observed_wa_wa_temp_max",
+     "col_observed_wa_wa_temp_min",
+     "col_observed_wa_wa_humidity",
+     "col_observed_wa_wa_ground_press",
+     "col_observed_wa_wa_wind_speed",
+     "col_observed_wa_wa_wind_dir",
+     "col_observed_wa_wa_rain",
+     "col_observed_wa_wa_snow"
+    ],
+    "ui": {
+     "x": 60,
+     "y": 640,
+     "zIndex": 2,
+     "widthName": 87,
+     "widthComment": 320,
+     "color": ""
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "tbl_forecast_wb": {
+    "id": "tbl_forecast_wb",
+    "name": "forecast_wb",
+    "comment": "train/forecast_wb.parquet 5,621,996행 + test/forecast_wb.parquet 1,278,960행 · 하루전 예보 B · 강수 8열은 학습 구간만 결측",
+    "columnIds": [
+     "col_forecast_wb_wb_station",
+     "col_forecast_wb_round",
+     "col_forecast_wb_ts",
+     "col_forecast_wb_wb_temp",
+     "col_forecast_wb_wb_feel_temp",
+     "col_forecast_wb_wb_wet_bulb_temp",
+     "col_forecast_wb_wb_dew_point",
+     "col_forecast_wb_wb_wind_speed",
+     "col_forecast_wb_wb_wind_dir",
+     "col_forecast_wb_wb_wind_gust_spd",
+     "col_forecast_wb_wb_rel_hum",
+     "col_forecast_wb_wb_vis",
+     "col_forecast_wb_wb_ceiling",
+     "col_forecast_wb_wb_uv_idx",
+     "col_forecast_wb_wb_precip_prob",
+     "col_forecast_wb_wb_rain_prob",
+     "col_forecast_wb_wb_snow_prob",
+     "col_forecast_wb_wb_ice_prob",
+     "col_forecast_wb_wb_total_liq",
+     "col_forecast_wb_wb_rain",
+     "col_forecast_wb_wb_snow",
+     "col_forecast_wb_wb_ice",
+     "col_forecast_wb_wb_cloud"
+    ],
+    "seqColumnIds": [
+     "col_forecast_wb_wb_station",
+     "col_forecast_wb_round",
+     "col_forecast_wb_ts",
+     "col_forecast_wb_wb_temp",
+     "col_forecast_wb_wb_feel_temp",
+     "col_forecast_wb_wb_wet_bulb_temp",
+     "col_forecast_wb_wb_dew_point",
+     "col_forecast_wb_wb_wind_speed",
+     "col_forecast_wb_wb_wind_dir",
+     "col_forecast_wb_wb_wind_gust_spd",
+     "col_forecast_wb_wb_rel_hum",
+     "col_forecast_wb_wb_vis",
+     "col_forecast_wb_wb_ceiling",
+     "col_forecast_wb_wb_uv_idx",
+     "col_forecast_wb_wb_precip_prob",
+     "col_forecast_wb_wb_rain_prob",
+     "col_forecast_wb_wb_snow_prob",
+     "col_forecast_wb_wb_ice_prob",
+     "col_forecast_wb_wb_total_liq",
+     "col_forecast_wb_wb_rain",
+     "col_forecast_wb_wb_snow",
+     "col_forecast_wb_wb_ice",
+     "col_forecast_wb_wb_cloud"
+    ],
+    "ui": {
+     "x": 1700,
+     "y": 220,
+     "zIndex": 2,
+     "widthName": 87,
+     "widthComment": 320,
+     "color": ""
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "tbl_observed_wb": {
+    "id": "tbl_observed_wb",
+    "name": "observed_wb",
+    "comment": "train/observed_wb.parquet · 2,824,223행 · 실측 기상 B · 학습 구간만 · 수신 값 그대로(이상값 포함)",
+    "columnIds": [
+     "col_observed_wb_wb_station",
+     "col_observed_wb_ts",
+     "col_observed_wb_wb_temp",
+     "col_observed_wb_wb_feel_temp",
+     "col_observed_wb_wb_feel_temp_shade",
+     "col_observed_wb_wb_rel_hum",
+     "col_observed_wb_wb_dew_point",
+     "col_observed_wb_wb_wind_dir",
+     "col_observed_wb_wb_wind_speed",
+     "col_observed_wb_wb_uv_idx",
+     "col_observed_wb_wb_vis",
+     "col_observed_wb_wb_cloud",
+     "col_observed_wb_wb_ceiling",
+     "col_observed_wb_wb_pressure",
+     "col_observed_wb_wb_appr_temp",
+     "col_observed_wb_wb_wind_chill_temp",
+     "col_observed_wb_wb_precip_1h"
+    ],
+    "seqColumnIds": [
+     "col_observed_wb_wb_station",
+     "col_observed_wb_ts",
+     "col_observed_wb_wb_temp",
+     "col_observed_wb_wb_feel_temp",
+     "col_observed_wb_wb_feel_temp_shade",
+     "col_observed_wb_wb_rel_hum",
+     "col_observed_wb_wb_dew_point",
+     "col_observed_wb_wb_wind_dir",
+     "col_observed_wb_wb_wind_speed",
+     "col_observed_wb_wb_uv_idx",
+     "col_observed_wb_wb_vis",
+     "col_observed_wb_wb_cloud",
+     "col_observed_wb_wb_ceiling",
+     "col_observed_wb_wb_pressure",
+     "col_observed_wb_wb_appr_temp",
+     "col_observed_wb_wb_wind_chill_temp",
+     "col_observed_wb_wb_precip_1h"
+    ],
+    "ui": {
+     "x": 2220,
+     "y": 220,
+     "zIndex": 2,
+     "widthName": 87,
+     "widthComment": 320,
+     "color": ""
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   }
+  },
+  "tableColumnEntities": {
+   "col_sites_site_id": {
+    "id": "col_sites_site_id",
+    "tableId": "tbl_sites",
+    "name": "site_id",
+    "comment": "익명 ID PV001~PV253",
+    "dataType": "VARCHAR(5)",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 1,
+     "widthName": 60,
+     "widthComment": 141,
+     "widthDataType": 80,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_sites_current_group": {
+    "id": "col_sites_current_group",
+    "tableId": "tbl_sites",
+    "name": "current_group",
+    "comment": "참조 배정 A/B. 주최 측: 무작위, 최적 아님. 제출 배정과 별개",
+    "dataType": "CHAR(1)",
+    "default": "",
+    "options": 8,
+    "ui": {
+     "keys": 0,
+     "widthName": 101,
+     "widthComment": 260,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_sites_capacity_kw": {
+    "id": "col_sites_capacity_kw",
+    "tableId": "tbl_sites",
+    "name": "capacity_kw",
+    "comment": "설비용량 kW. 합계 42,655.4. 범위 14.4~1,387.5",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 8,
+    "ui": {
+     "keys": 0,
+     "widthName": 87,
+     "widthComment": 260,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_sites_lat": {
+    "id": "col_sites_lat",
+    "tableId": "tbl_sites",
+    "name": "lat",
+    "comment": "위도 WGS84. 최대 2 km 이동 후 소수 4자리 반올림",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 8,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 260,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_sites_lon": {
+    "id": "col_sites_lon",
+    "tableId": "tbl_sites",
+    "name": "lon",
+    "comment": "경도. 같은 비식별 처리",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 8,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 155,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_sites_wa_station": {
+    "id": "col_sites_wa_station",
+    "tableId": "tbl_sites",
+    "name": "wa_station",
+    "comment": "A사 관측지점 WA001~WA061",
+    "dataType": "VARCHAR(5)",
+    "default": "",
+    "options": 8,
+    "ui": {
+     "keys": 2,
+     "widthName": 80,
+     "widthComment": 173,
+     "widthDataType": 80,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_sites_wb_station": {
+    "id": "col_sites_wb_station",
+    "tableId": "tbl_sites",
+    "name": "wb_station",
+    "comment": "B사 관측지점 WB001~WB073",
+    "dataType": "VARCHAR(5)",
+    "default": "",
+    "options": 8,
+    "ui": {
+     "keys": 2,
+     "widthName": 80,
+     "widthComment": 173,
+     "widthDataType": 80,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_sites_wa_dist": {
+    "id": "col_sites_wa_dist",
+    "tableId": "tbl_sites",
+    "name": "wa_dist",
+    "comment": "지점까지 직선거리 m(100 m 단위). 이동 전 위치 기준. 중앙값 6.9 km, 최대 15.5 km",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 260,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_sites_wb_dist": {
+    "id": "col_sites_wb_dist",
+    "tableId": "tbl_sites",
+    "name": "wb_dist",
+    "comment": "중앙값 5.0 km, 최대 13.0 km. 좌표로 다시 재면 값이 다름(역산 금지)",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 260,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_wa_station_wa_station": {
+    "id": "col_wa_station_wa_station",
+    "tableId": "tbl_wa_station",
+    "name": "wa_station",
+    "comment": "WA001~WA061",
+    "dataType": "VARCHAR(5)",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 1,
+     "widthName": 80,
+     "widthComment": 87,
+     "widthDataType": 80,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_wb_station_wb_station": {
+    "id": "col_wb_station_wb_station",
+    "tableId": "tbl_wb_station",
+    "name": "wb_station",
+    "comment": "WB001~WB073",
+    "dataType": "VARCHAR(5)",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 1,
+     "widthName": 80,
+     "widthComment": 87,
+     "widthDataType": 80,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_generation_site_id": {
+    "id": "col_generation_site_id",
+    "tableId": "tbl_generation",
+    "name": "site_id",
+    "comment": "",
+    "dataType": "VARCHAR(5)",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 3,
+     "widthName": 60,
+     "widthComment": 60,
+     "widthDataType": 80,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_generation_ts": {
+    "id": "col_generation_ts",
+    "tableId": "tbl_generation",
+    "name": "ts",
+    "comment": "KST, 1시간, 우측닫힘. 결측은 행 부재(NaN 없음). 48개소는 2024-06 이후 시작",
+    "dataType": "TIMESTAMPTZ",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 1,
+     "widthName": 60,
+     "widthComment": 260,
+     "widthDataType": 87,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_generation_energy": {
+    "id": "col_generation_energy",
+    "tableId": "tbl_generation",
+    "name": "energy",
+    "comment": "해당 1시간 발전량 kWh",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 8,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 150,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_train_smp_ts": {
+    "id": "col_train_smp_ts",
+    "tableId": "tbl_train_smp",
+    "name": "ts",
+    "comment": "KST, 1시간, 우측닫힘",
+    "dataType": "TIMESTAMPTZ",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 1,
+     "widthName": 60,
+     "widthComment": 144,
+     "widthDataType": 87,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_train_smp_smp": {
+    "id": "col_train_smp_smp",
+    "tableId": "tbl_train_smp",
+    "name": "smp",
+    "comment": "원/kWh. 학습 구간 가격",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 8,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 157,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_smp_ts": {
+    "id": "col_smp_ts",
+    "tableId": "tbl_smp",
+    "name": "ts",
+    "comment": "채점 시각. 제출 forecast.csv의 ts와 같아야 함",
+    "dataType": "TIMESTAMPTZ",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 1,
+     "widthName": 60,
+     "widthComment": 260,
+     "widthDataType": 87,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_smp_smp": {
+    "id": "col_smp_smp",
+    "tableId": "tbl_smp",
+    "name": "smp",
+    "comment": "원/kWh. 0 이상, 0원 시각 18개",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 8,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 206,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_smp_k": {
+    "id": "col_smp_k",
+    "tableId": "tbl_smp",
+    "name": "k",
+    "comment": "벌금 가중치 1 또는 3. ts 시각 11~15(실제 10:00~15:00)이면 3",
+    "dataType": "SMALLINT",
+    "default": "",
+    "options": 8,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 260,
+     "widthDataType": 66,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_composition_site_id": {
+    "id": "col_composition_site_id",
+    "tableId": "tbl_composition",
+    "name": "site_id",
+    "comment": "sites.csv 253개소 전부, 한 번씩",
+    "dataType": "VARCHAR(5)",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 3,
+     "widthName": 60,
+     "widthComment": 220,
+     "widthDataType": 80,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_composition_group": {
+    "id": "col_composition_group",
+    "tableId": "tbl_composition",
+    "name": "group",
+    "comment": "G1 또는 G2. 각 그룹 설비용량 합 ≥ 20,000 kW",
+    "dataType": "CHAR(2)",
+    "default": "",
+    "options": 8,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 260,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_group": {
+    "id": "col_forecast_group",
+    "tableId": "tbl_forecast",
+    "name": "group",
+    "comment": "G1 / G2",
+    "dataType": "CHAR(2)",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 1,
+     "widthName": 60,
+     "widthComment": 60,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_ts": {
+    "id": "col_forecast_ts",
+    "tableId": "tbl_forecast",
+    "name": "ts",
+    "comment": "타임존(+09:00) 필수. smp.csv의 8,760시각",
+    "dataType": "TIMESTAMPTZ",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 3,
+     "widthName": 60,
+     "widthComment": 260,
+     "widthDataType": 87,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_forecast_kwh": {
+    "id": "col_forecast_forecast_kwh",
+    "tableId": "tbl_forecast",
+    "name": "forecast_kwh",
+    "comment": "집합 발전량 예측 kWh. 0 이상, NULL·Inf 불가",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 8,
+    "ui": {
+     "keys": 0,
+     "widthName": 94,
+     "widthComment": 260,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wa_wa_station": {
+    "id": "col_forecast_wa_wa_station",
+    "tableId": "tbl_forecast_wa",
+    "name": "wa_station",
+    "comment": "",
+    "dataType": "VARCHAR(5)",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 3,
+     "widthName": 80,
+     "widthComment": 60,
+     "widthDataType": 80,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wa_round": {
+    "id": "col_forecast_wa_round",
+    "tableId": "tbl_forecast_wa",
+    "name": "round",
+    "comment": "10 = 전날 10시 발행, 17 = 전날 17시 발행. 둘 다 예측시점 이전",
+    "dataType": "SMALLINT",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 1,
+     "widthName": 60,
+     "widthComment": 260,
+     "widthDataType": 66,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wa_ts": {
+    "id": "col_forecast_wa_ts",
+    "tableId": "tbl_forecast_wa",
+    "name": "ts",
+    "comment": "대상 시각. KST, 우측닫힘",
+    "dataType": "TIMESTAMPTZ",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 1,
+     "widthName": 60,
+     "widthComment": 170,
+     "widthDataType": 87,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wa_wa_cloud": {
+    "id": "col_forecast_wa_wa_cloud",
+    "tableId": "tbl_forecast_wa",
+    "name": "wa_cloud",
+    "comment": "운량 % 0~100",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 66,
+     "widthComment": 92,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wa_wa_temp": {
+    "id": "col_forecast_wa_wa_temp",
+    "tableId": "tbl_forecast_wa",
+    "name": "wa_temp",
+    "comment": "기온 °C −19.99~37.64",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 148,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wa_wa_temp_max": {
+    "id": "col_forecast_wa_wa_temp_max",
+    "tableId": "tbl_forecast_wa",
+    "name": "wa_temp_max",
+    "comment": "기온 최대 °C. 하루전 예보에서는 wa_temp와 같은 값",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 87,
+     "widthComment": 260,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wa_wa_temp_min": {
+    "id": "col_forecast_wa_wa_temp_min",
+    "tableId": "tbl_forecast_wa",
+    "name": "wa_temp_min",
+    "comment": "기온 최소 °C. 동일",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 87,
+     "widthComment": 130,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wa_wa_humidity": {
+    "id": "col_forecast_wa_wa_humidity",
+    "tableId": "tbl_forecast_wa",
+    "name": "wa_humidity",
+    "comment": "상대습도 % 7~104 (104는 원본 값)",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 87,
+     "widthComment": 226,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wa_wa_ground_press": {
+    "id": "col_forecast_wa_wa_ground_press",
+    "tableId": "tbl_forecast_wa",
+    "name": "wa_ground_press",
+    "comment": "지표기압 hPa 966~1,039",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 115,
+     "widthComment": 160,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wa_wa_wind_speed": {
+    "id": "col_forecast_wa_wa_wind_speed",
+    "tableId": "tbl_forecast_wa",
+    "name": "wa_wind_speed",
+    "comment": "풍속 m/s 0~24.07",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 101,
+     "widthComment": 120,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wa_wa_wind_dir": {
+    "id": "col_forecast_wa_wa_wind_dir",
+    "tableId": "tbl_forecast_wa",
+    "name": "wa_wind_dir",
+    "comment": "풍향 ° 0~360",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 87,
+     "widthComment": 92,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wa_wa_rain": {
+    "id": "col_forecast_wa_wa_rain",
+    "tableId": "tbl_forecast_wa",
+    "name": "wa_rain",
+    "comment": "강우량 mm 0~57.38",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 126,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wa_wa_snow": {
+    "id": "col_forecast_wa_wa_snow",
+    "tableId": "tbl_forecast_wa",
+    "name": "wa_snow",
+    "comment": "강설량 mm 0~10.32",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 126,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wa_wa_station": {
+    "id": "col_observed_wa_wa_station",
+    "tableId": "tbl_observed_wa",
+    "name": "wa_station",
+    "comment": "",
+    "dataType": "VARCHAR(5)",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 3,
+     "widthName": 80,
+     "widthComment": 60,
+     "widthDataType": 80,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wa_ts": {
+    "id": "col_observed_wa_ts",
+    "tableId": "tbl_observed_wa",
+    "name": "ts",
+    "comment": "관측 시각",
+    "dataType": "TIMESTAMPTZ",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 1,
+     "widthName": 60,
+     "widthComment": 69,
+     "widthDataType": 87,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wa_wa_cloud": {
+    "id": "col_observed_wa_wa_cloud",
+    "tableId": "tbl_observed_wa",
+    "name": "wa_cloud",
+    "comment": "운량 % 0~100",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 66,
+     "widthComment": 92,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wa_wa_temp": {
+    "id": "col_observed_wa_wa_temp",
+    "tableId": "tbl_observed_wa",
+    "name": "wa_temp",
+    "comment": "기온 °C −24.00~38.99",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 148,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wa_wa_temp_max": {
+    "id": "col_observed_wa_wa_temp_max",
+    "tableId": "tbl_observed_wa",
+    "name": "wa_temp_max",
+    "comment": "°C −24.00~38.99",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 87,
+     "widthComment": 115,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wa_wa_temp_min": {
+    "id": "col_observed_wa_wa_temp_min",
+    "tableId": "tbl_observed_wa",
+    "name": "wa_temp_min",
+    "comment": "°C −24.00~38.00",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 87,
+     "widthComment": 115,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wa_wa_humidity": {
+    "id": "col_observed_wa_wa_humidity",
+    "tableId": "tbl_observed_wa",
+    "name": "wa_humidity",
+    "comment": "상대습도 % 4~100",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 87,
+     "widthComment": 118,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wa_wa_ground_press": {
+    "id": "col_observed_wa_wa_ground_press",
+    "tableId": "tbl_observed_wa",
+    "name": "wa_ground_press",
+    "comment": "지표기압 hPa 955.94~1,043",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 115,
+     "widthComment": 181,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wa_wa_wind_speed": {
+    "id": "col_observed_wa_wa_wind_speed",
+    "tableId": "tbl_observed_wa",
+    "name": "wa_wind_speed",
+    "comment": "풍속 m/s 0~9,999. >50 이상값 14건(9999 포함)",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 101,
+     "widthComment": 260,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wa_wa_wind_dir": {
+    "id": "col_observed_wa_wa_wind_dir",
+    "tableId": "tbl_observed_wa",
+    "name": "wa_wind_dir",
+    "comment": "풍향 ° 0~360",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 87,
+     "widthComment": 92,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wa_wa_rain": {
+    "id": "col_observed_wa_wa_rain",
+    "tableId": "tbl_observed_wa",
+    "name": "wa_rain",
+    "comment": "강우량 mm 0~114.03",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 133,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wa_wa_snow": {
+    "id": "col_observed_wa_wa_snow",
+    "tableId": "tbl_observed_wa",
+    "name": "wa_snow",
+    "comment": "강설량 mm 0~14.42",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 126,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_station": {
+    "id": "col_forecast_wb_wb_station",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_station",
+    "comment": "",
+    "dataType": "VARCHAR(5)",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 3,
+     "widthName": 80,
+     "widthComment": 60,
+     "widthDataType": 80,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_round": {
+    "id": "col_forecast_wb_round",
+    "tableId": "tbl_forecast_wb",
+    "name": "round",
+    "comment": "10 / 17",
+    "dataType": "SMALLINT",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 1,
+     "widthName": 60,
+     "widthComment": 60,
+     "widthDataType": 66,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_ts": {
+    "id": "col_forecast_wb_ts",
+    "tableId": "tbl_forecast_wb",
+    "name": "ts",
+    "comment": "대상 시각. KST, 우측닫힘",
+    "dataType": "TIMESTAMPTZ",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 1,
+     "widthName": 60,
+     "widthComment": 170,
+     "widthDataType": 87,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_temp": {
+    "id": "col_forecast_wb_wb_temp",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_temp",
+    "comment": "기온 °C −23.33~38.89 (°F 환산)",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 216,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_feel_temp": {
+    "id": "col_forecast_wb_wb_feel_temp",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_feel_temp",
+    "comment": "체감온도 °C −30.56~53.33",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 94,
+     "widthComment": 174,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_wet_bulb_temp": {
+    "id": "col_forecast_wb_wb_wet_bulb_temp",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_wet_bulb_temp",
+    "comment": "습구온도 °C −24.44~30.56",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 122,
+     "widthComment": 174,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_dew_point": {
+    "id": "col_forecast_wb_wb_dew_point",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_dew_point",
+    "comment": "이슬점 °C −49.44~29.44",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 94,
+     "widthComment": 161,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_wind_speed": {
+    "id": "col_forecast_wb_wb_wind_speed",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_wind_speed",
+    "comment": "풍속 km/h 0~122.31 (A사는 m/s)",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 101,
+     "widthComment": 216,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_wind_dir": {
+    "id": "col_forecast_wb_wb_wind_dir",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_wind_dir",
+    "comment": "풍향 ° 0~360",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 87,
+     "widthComment": 92,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_wind_gust_spd": {
+    "id": "col_forecast_wb_wb_wind_gust_spd",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_wind_gust_spd",
+    "comment": "순간최대풍속 km/h 0~175.90",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 122,
+     "widthComment": 186,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_rel_hum": {
+    "id": "col_forecast_wb_wb_rel_hum",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_rel_hum",
+    "comment": "상대습도 % 1~100",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 80,
+     "widthComment": 118,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_vis": {
+    "id": "col_forecast_wb_wb_vis",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_vis",
+    "comment": "시정 km 0~49.90 (mile 환산)",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 195,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_ceiling": {
+    "id": "col_forecast_wb_wb_ceiling",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_ceiling",
+    "comment": "운고 m 0~16,337.30 (ft 환산)",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 80,
+     "widthComment": 202,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_uv_idx": {
+    "id": "col_forecast_wb_wb_uv_idx",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_uv_idx",
+    "comment": "자외선지수 0~12",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 73,
+     "widthComment": 110,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_precip_prob": {
+    "id": "col_forecast_wb_wb_precip_prob",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_precip_prob",
+    "comment": "강수확률 % 0~90. 학습 구간 1,298행 결측",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 108,
+     "widthComment": 260,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_rain_prob": {
+    "id": "col_forecast_wb_wb_rain_prob",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_rain_prob",
+    "comment": "강우확률 % 0~90. 〃",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 94,
+     "widthComment": 138,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_snow_prob": {
+    "id": "col_forecast_wb_wb_snow_prob",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_snow_prob",
+    "comment": "강설확률 % 0~90. 〃",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 94,
+     "widthComment": 138,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_ice_prob": {
+    "id": "col_forecast_wb_wb_ice_prob",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_ice_prob",
+    "comment": "결빙확률 % 0~85. 〃",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 87,
+     "widthComment": 138,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_total_liq": {
+    "id": "col_forecast_wb_wb_total_liq",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_total_liq",
+    "comment": "총 강수량(물환산) mm 0~102.11. 〃",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 94,
+     "widthComment": 233,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_rain": {
+    "id": "col_forecast_wb_wb_rain",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_rain",
+    "comment": "강우량 mm 0~102.11. 〃",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 160,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_snow": {
+    "id": "col_forecast_wb_wb_snow",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_snow",
+    "comment": "강설량 cm 0~186.69. 〃",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 160,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_ice": {
+    "id": "col_forecast_wb_wb_ice",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_ice",
+    "comment": "착빙량 mm 0~7.11. 〃",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 146,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_forecast_wb_wb_cloud": {
+    "id": "col_forecast_wb_wb_cloud",
+    "tableId": "tbl_forecast_wb",
+    "name": "wb_cloud",
+    "comment": "운량 % 0~100",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 66,
+     "widthComment": 92,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wb_wb_station": {
+    "id": "col_observed_wb_wb_station",
+    "tableId": "tbl_observed_wb",
+    "name": "wb_station",
+    "comment": "",
+    "dataType": "VARCHAR(5)",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 3,
+     "widthName": 80,
+     "widthComment": 60,
+     "widthDataType": 80,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wb_ts": {
+    "id": "col_observed_wb_ts",
+    "tableId": "tbl_observed_wb",
+    "name": "ts",
+    "comment": "관측 시각",
+    "dataType": "TIMESTAMPTZ",
+    "default": "",
+    "options": 10,
+    "ui": {
+     "keys": 1,
+     "widthName": 60,
+     "widthComment": 69,
+     "widthDataType": 87,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wb_wb_temp": {
+    "id": "col_observed_wb_wb_temp",
+    "tableId": "tbl_observed_wb",
+    "name": "wb_temp",
+    "comment": "기온 °C −22.43~39.49",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 148,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wb_wb_feel_temp": {
+    "id": "col_observed_wb_wb_feel_temp",
+    "tableId": "tbl_observed_wb",
+    "name": "wb_feel_temp",
+    "comment": "체감온도 °C −32.78~60.48",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 94,
+     "widthComment": 174,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wb_wb_feel_temp_shade": {
+    "id": "col_observed_wb_wb_feel_temp_shade",
+    "tableId": "tbl_observed_wb",
+    "name": "wb_feel_temp_shade",
+    "comment": "체감온도(그늘) °C. 실측에만 있음",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 136,
+     "widthComment": 222,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wb_wb_rel_hum": {
+    "id": "col_observed_wb_wb_rel_hum",
+    "tableId": "tbl_observed_wb",
+    "name": "wb_rel_hum",
+    "comment": "상대습도 % 1~100",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 80,
+     "widthComment": 118,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wb_wb_dew_point": {
+    "id": "col_observed_wb_wb_dew_point",
+    "tableId": "tbl_observed_wb",
+    "name": "wb_dew_point",
+    "comment": "이슬점 °C −40.60~31.76",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 94,
+     "widthComment": 161,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wb_wb_wind_dir": {
+    "id": "col_observed_wb_wb_wind_dir",
+    "tableId": "tbl_observed_wb",
+    "name": "wb_wind_dir",
+    "comment": "풍향 ° 0~338",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 87,
+     "widthComment": 92,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wb_wb_wind_speed": {
+    "id": "col_observed_wb_wb_wind_speed",
+    "tableId": "tbl_observed_wb",
+    "name": "wb_wind_speed",
+    "comment": "풍속 km/h 0~353. >200 이상값 230건",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 101,
+     "widthComment": 242,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wb_wb_uv_idx": {
+    "id": "col_observed_wb_wb_uv_idx",
+    "tableId": "tbl_observed_wb",
+    "name": "wb_uv_idx",
+    "comment": "자외선지수 0~68. >15 이상값 394건",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 73,
+     "widthComment": 232,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wb_wb_vis": {
+    "id": "col_observed_wb_wb_vis",
+    "tableId": "tbl_observed_wb",
+    "name": "wb_vis",
+    "comment": "시정 km 0~77.20. >50 이상값 896건",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 60,
+     "widthComment": 235,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wb_wb_cloud": {
+    "id": "col_observed_wb_wb_cloud",
+    "tableId": "tbl_observed_wb",
+    "name": "wb_cloud",
+    "comment": "운량 % 0~9,144. >100 이상값 433건",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 66,
+     "widthComment": 235,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wb_wb_ceiling": {
+    "id": "col_observed_wb_wb_ceiling",
+    "tableId": "tbl_observed_wb",
+    "name": "wb_ceiling",
+    "comment": "운고 m 0~15,240",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 80,
+     "widthComment": 113,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wb_wb_pressure": {
+    "id": "col_observed_wb_wb_pressure",
+    "tableId": "tbl_observed_wb",
+    "name": "wb_pressure",
+    "comment": "기압 hPa 0~1,052.62. <900 이상값 428건. 실측에만 있음",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 87,
+     "widthComment": 260,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wb_wb_appr_temp": {
+    "id": "col_observed_wb_wb_appr_temp",
+    "tableId": "tbl_observed_wb",
+    "name": "wb_appr_temp",
+    "comment": "근사체감온도 °C. 실측에만 있음",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 94,
+     "widthComment": 208,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wb_wb_wind_chill_temp": {
+    "id": "col_observed_wb_wb_wind_chill_temp",
+    "tableId": "tbl_observed_wb",
+    "name": "wb_wind_chill_temp",
+    "comment": "풍냉온도 °C. 실측에만 있음",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 136,
+     "widthComment": 182,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "col_observed_wb_wb_precip_1h": {
+    "id": "col_observed_wb_wb_precip_1h",
+    "tableId": "tbl_observed_wb",
+    "name": "wb_precip_1h",
+    "comment": "1시간 강수량 mm 0~39.38. 실측에만 있음",
+    "dataType": "DOUBLE",
+    "default": "",
+    "options": 0,
+    "ui": {
+     "keys": 0,
+     "widthName": 94,
+     "widthComment": 260,
+     "widthDataType": 60,
+     "widthDefault": 60
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   }
+  },
+  "relationshipEntities": {
+   "rel_wa_station_sites": {
+    "id": "rel_wa_station_sites",
+    "identification": false,
+    "relationshipType": 16,
+    "startRelationshipType": 2,
+    "onDelete": 1,
+    "onUpdate": 1,
+    "start": {
+     "tableId": "tbl_wa_station",
+     "columnIds": [
+      "col_wa_station_wa_station"
+     ],
+     "x": 427,
+     "y": 120.0,
+     "direction": 2
+    },
+    "end": {
+     "tableId": "tbl_sites",
+     "columnIds": [
+      "col_sites_wa_station"
+     ],
+     "x": 760,
+     "y": 208.0,
+     "direction": 1
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "rel_wb_station_sites": {
+    "id": "rel_wb_station_sites",
+    "identification": false,
+    "relationshipType": 16,
+    "startRelationshipType": 2,
+    "onDelete": 1,
+    "onUpdate": 1,
+    "start": {
+     "tableId": "tbl_wb_station",
+     "columnIds": [
+      "col_wb_station_wb_station"
+     ],
+     "x": 1700,
+     "y": 120.0,
+     "direction": 1
+    },
+    "end": {
+     "tableId": "tbl_sites",
+     "columnIds": [
+      "col_sites_wb_station"
+     ],
+     "x": 1321,
+     "y": 208.0,
+     "direction": 2
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "rel_sites_generation": {
+    "id": "rel_sites_generation",
+    "identification": true,
+    "relationshipType": 16,
+    "startRelationshipType": 2,
+    "onDelete": 1,
+    "onUpdate": 1,
+    "start": {
+     "tableId": "tbl_sites",
+     "columnIds": [
+      "col_sites_site_id"
+     ],
+     "x": 1040.5,
+     "y": 336,
+     "direction": 8
+    },
+    "end": {
+     "tableId": "tbl_generation",
+     "columnIds": [
+      "col_generation_site_id"
+     ],
+     "x": 1023.5,
+     "y": 420,
+     "direction": 4
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "rel_sites_composition": {
+    "id": "rel_sites_composition",
+    "identification": true,
+    "relationshipType": 8,
+    "startRelationshipType": 2,
+    "onDelete": 1,
+    "onUpdate": 1,
+    "start": {
+     "tableId": "tbl_sites",
+     "columnIds": [
+      "col_sites_site_id"
+     ],
+     "x": 1040.5,
+     "y": 80,
+     "direction": 4
+    },
+    "end": {
+     "tableId": "tbl_composition",
+     "columnIds": [
+      "col_composition_site_id"
+     ],
+     "x": 1440.0,
+     "y": 182,
+     "direction": 8
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "rel_wa_station_forecast_wa": {
+    "id": "rel_wa_station_forecast_wa",
+    "identification": true,
+    "relationshipType": 16,
+    "startRelationshipType": 2,
+    "onDelete": 1,
+    "onUpdate": 1,
+    "start": {
+     "tableId": "tbl_wa_station",
+     "columnIds": [
+      "col_wa_station_wa_station"
+     ],
+     "x": 243.5,
+     "y": 160,
+     "direction": 8
+    },
+    "end": {
+     "tableId": "tbl_forecast_wa",
+     "columnIds": [
+      "col_forecast_wa_wa_station"
+     ],
+     "x": 351.0,
+     "y": 220,
+     "direction": 4
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "rel_wa_station_observed_wa": {
+    "id": "rel_wa_station_observed_wa",
+    "identification": true,
+    "relationshipType": 16,
+    "startRelationshipType": 2,
+    "onDelete": 1,
+    "onUpdate": 1,
+    "start": {
+     "tableId": "tbl_wa_station",
+     "columnIds": [
+      "col_wa_station_wa_station"
+     ],
+     "x": 243.5,
+     "y": 160,
+     "direction": 8
+    },
+    "end": {
+     "tableId": "tbl_observed_wa",
+     "columnIds": [
+      "col_observed_wa_wa_station"
+     ],
+     "x": 351.0,
+     "y": 640,
+     "direction": 4
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "rel_wb_station_forecast_wb": {
+    "id": "rel_wb_station_forecast_wb",
+    "identification": true,
+    "relationshipType": 16,
+    "startRelationshipType": 2,
+    "onDelete": 1,
+    "onUpdate": 1,
+    "start": {
+     "tableId": "tbl_wb_station",
+     "columnIds": [
+      "col_wb_station_wb_station"
+     ],
+     "x": 1883.5,
+     "y": 160,
+     "direction": 8
+    },
+    "end": {
+     "tableId": "tbl_forecast_wb",
+     "columnIds": [
+      "col_forecast_wb_wb_station"
+     ],
+     "x": 1994.5,
+     "y": 220,
+     "direction": 4
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "rel_wb_station_observed_wb": {
+    "id": "rel_wb_station_observed_wb",
+    "identification": true,
+    "relationshipType": 16,
+    "startRelationshipType": 2,
+    "onDelete": 1,
+    "onUpdate": 1,
+    "start": {
+     "tableId": "tbl_wb_station",
+     "columnIds": [
+      "col_wb_station_wb_station"
+     ],
+     "x": 2067,
+     "y": 120.0,
+     "direction": 2
+    },
+    "end": {
+     "tableId": "tbl_observed_wb",
+     "columnIds": [
+      "col_observed_wb_wb_station"
+     ],
+     "x": 2220,
+     "y": 436.0,
+     "direction": 1
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "rel_smp_forecast": {
+    "id": "rel_smp_forecast",
+    "identification": true,
+    "relationshipType": 16,
+    "startRelationshipType": 2,
+    "onDelete": 1,
+    "onUpdate": 1,
+    "start": {
+     "tableId": "tbl_smp",
+     "columnIds": [
+      "col_smp_ts"
+     ],
+     "x": 1443.5,
+     "y": 384,
+     "direction": 8
+    },
+    "end": {
+     "tableId": "tbl_forecast",
+     "columnIds": [
+      "col_forecast_ts"
+     ],
+     "x": 1460.5,
+     "y": 440,
+     "direction": 4
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   }
+  },
+  "indexEntities": {},
+  "indexColumnEntities": {},
+  "memoEntities": {
+   "memo_0": {
+    "id": "memo_0",
+    "value": "시간 규약\n• 모든 ts는 KST(+09:00), 1시간 간격, 우측닫힘. 13:00 = 12:00~13:00 구간\n• 예측 시점 = 대상일 전날 17:00. round 10·17 모두 그 이전 발행\n• 벌금 가중치 k=3 구간 = ts 시각 11~15 (실제 10:00~15:00)",
+    "ui": {
+     "x": 60,
+     "y": 900,
+     "zIndex": 1,
+     "width": 470,
+     "height": 190,
+     "color": ""
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "memo_1": {
+    "id": "memo_1",
+    "value": "평가 구간 2025-06-01 01:00 ~ 2026-06-01 00:00 (8,760시각)\n있음: forecast_wa / forecast_wb (test/), smp (k 포함), sites\n없음: generation, observed_wa, observed_wb\n→ 어제 실적을 쓰는 자기회귀 피처 불가. 예보만으로 예측",
+    "ui": {
+     "x": 560,
+     "y": 900,
+     "zIndex": 1,
+     "width": 470,
+     "height": 190,
+     "color": ""
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "memo_2": {
+    "id": "memo_2",
+    "value": "조인 열쇠 (baseline.features)\ngeneration(site_id, ts)\n ⋈ sites(site_id) → wa_station, wb_station\n ⋈ forecast_wa(wa_station, round, ts)\n ⋈ forecast_wb(wb_station, round, ts)\nobserved_*는 (station, ts)로 forecast_*와 짝지어 예보 오차 학습용",
+    "ui": {
+     "x": 1060,
+     "y": 900,
+     "zIndex": 1,
+     "width": 470,
+     "height": 190,
+     "color": ""
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "memo_3": {
+    "id": "memo_3",
+    "value": "규정 메모\n• 좌표로 발전소·사업자·원래 위치 특정 금지 (wa_dist/wb_dist 역산 포함)\n• 데이터 파일을 외부 API·생성형 AI 서비스에 업로드 금지\n• 평가 구간 실제 실적 조회 금지\n• 전날 17시 이후 발행 정보 사용 금지",
+    "ui": {
+     "x": 1560,
+     "y": 900,
+     "zIndex": 1,
+     "width": 470,
+     "height": 190,
+     "color": ""
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   },
+   "memo_4": {
+    "id": "memo_4",
+    "value": "oibc.duckdb (build_db.py) 매핑\n• smp + train_smp → 테이블 smp (split='test'/'train', train의 k는 규칙으로 생성)\n• forecast_* train/test → 한 테이블 (split 열)\n• ts는 KST naive TIMESTAMP로 저장\n• 뷰: v_smp(weight), v_generation(cf), v_site_coverage",
+    "ui": {
+     "x": 2060,
+     "y": 900,
+     "zIndex": 1,
+     "width": 470,
+     "height": 190,
+     "color": ""
+    },
+    "meta": {
+     "updateAt": 1792376387065,
+     "createAt": 1792376387065
+    }
+   }
+  }
+ },
+ "lww": {}
+}
