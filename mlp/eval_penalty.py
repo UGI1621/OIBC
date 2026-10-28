@@ -5,6 +5,7 @@
 먼저 있어야 하는 파일 (mlp/outputs/):
   gbdt_l2_test_pred.parquet, gbdt_l2_test_pred_r10.parquet   주최 측 베이스라인 재현용 (gbdt.py --objective l2, --round 10)
   gbdt_l1_test_pred*.parquet                                  gbdt.py --objective l1 --seeds 0-2
+  gbdt_l1_rc_test_pred*.parquet                               gbdt.py --objective l1 --seeds 0-2 --round-change (없으면 생략)
   model_big_test_s*.pt                                        train_big.py --seed N (없으면 MLP·혼합 행은 생략)
 
 출력: 모델별 MAE·팀 합계 오차·벌금(원), 구성별 벌금, 시각·월별 벌금 비중과 편향, GBDT 입력 중요도. 집계 숫자만 출력한다.
@@ -14,7 +15,7 @@ import json
 from pathlib import Path
 import numpy as np, pandas as pd, torch, lightgbm as lgb
 
-from common import B, DATA, KST, OUT, MLP, Scaler, build_train_frame  # noqa: E402
+from common import B, DATA, KST, OUT, Scaler, build_train_frame, mlp_predict  # noqa: E402
 
 TEST_FROM = pd.Timestamp("2024-06-01 01:00", tz=KST)
 d, sites = build_train_frame(TEST_FROM, 17)
@@ -24,16 +25,14 @@ key = pd.DataFrame({"site_id": d.site_id.values, "ts": d.ts.values})  # gbdt.py 
 
 def gb(pattern):
     ps = [key.merge(pd.read_parquet(p), on=["site_id", "ts"], how="left").p.values for p in sorted(OUT.glob(pattern))]
-    return np.mean(ps, 0), len(ps)
+    return (np.mean(ps, 0) if ps else None), len(ps)
 
 def mlp_preds(pattern):
     out = []
     for p in sorted(OUT.glob(pattern)):
         ck = torch.load(p, weights_only=False)
-        m = MLP(ck["nin"], ck["hidden"], ck["emb"], drop=ck.get("drop", 0.0)); m.load_state_dict(ck["state"]); m.eval()
         X = Scaler.from_state(ck["scaler"]).transform(d[ck["feats"]].astype("float32").values)
-        with torch.no_grad():
-            out.append(np.clip(m(torch.tensor(X), torch.tensor(d.site_id.map(ck["smap"]).values.astype("int64"))).numpy(), 0, None))
+        out.append(mlp_predict(ck, X, d.site_id.map(ck["smap"]).values.astype("int64")))   # 에폭 평균 모델도 처리
     return np.mean(out, 0), len(out)
 
 smp = pd.read_csv(DATA / "train" / "smp.csv"); smp["ts"] = pd.to_datetime(smp.ts).dt.tz_convert(KST)
@@ -67,11 +66,16 @@ M["주최 측 베이스라인 (L2, 라운드10·17 평균)"] = (r10 + r17) / 2
 M["GBDT L2 (라운드17)"] = r17
 gl1, ng = gb("gbdt_l1_test_pred*.parquet"); M[f"GBDT L1 {ng}시드 평균"] = gl1
 gl1_0, _ = gb("gbdt_l1_test_pred.parquet"); M["GBDT L1 시드 1개"] = gl1_0
+grc, nrc = gb("gbdt_l1_rc_test_pred*.parquet")
+if nrc:
+    M[f"GBDT L1 + 라운드 변화 {nrc}시드 평균"] = grc
 mm, nm = mlp_preds("model_big_test_s*.pt")
 if nm:
     M[f"큰 MLP {nm}시드 평균"] = mm
     for w in (0.5, 0.7):
         M[f"혼합 MLP {w} + GBDT {1-w:.1f}"] = w * mm + (1 - w) * gl1
+    if nrc:
+        M["혼합 MLP 0.7 + GBDT(라운드 변화) 0.3"] = 0.7 * mm + 0.3 * grc
 
 base_pen, _ = penalty(M["주최 측 베이스라인 (L2, 라운드10·17 평균)"])
 revenue = float((pd.DataFrame({"ts": d.ts, "a": y * cap}).groupby("ts").a.sum() * W).sum())

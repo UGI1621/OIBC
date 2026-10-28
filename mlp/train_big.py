@@ -17,7 +17,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 
-from common import B, KST, OUT, Scaler, build_train_frame, log, site_index
+from common import B, KST, OUT, Scaler, build_train_frame, log, mlp_predict, site_index
 
 # ----------------------------------------------------------------------------- 설정
 # 하이퍼파라미터. 값을 바꾸면 파일 이름(name)도 같이 바꿔 두면 산출물이 섞이지 않는다.
@@ -65,6 +65,14 @@ CONFIG = dict(
     #   올리면 에폭당 11~34초라 시간이 그만큼 는다.
     patience=8,
 
+    # 에폭 평균. N 이면 조기 종료 없이 N 에폭 학습하고, 매 에폭 가중치를 모두 저장해 예측 때 N 개 예측을 평균한다.
+    #   0 이면 예전 방식(검증 MAE 최저 에폭 하나 + 조기 종료, patience 사용).
+    #   이유(2026-10-28): 홀드아웃 벌금이 한 에폭마다 ±2,000만 원 출렁이고, 검증 MAE(두 달)와 벌금의 상관이 0.16~0.23뿐이라
+    #   검증으로 에폭 하나를 고르는 게 운에 가깝다. 16 에폭 평균으로 MLP 3시드 벌금 204.5 -> 200.1백만, 혼합 201.3 -> 197.4백만.
+    #   이 모드에서도 검증 MAE 는 기록만 한다. 학습 구간은 예전과 같다(검증 두 달은 학습에 안 씀).
+    #   비용: 학습 시간이 16 에폭 고정, 모델 파일이 16배(약 27MB), 예측도 16번.
+    epoch_avg=16,
+
     # 사용할 예보 발행 라운드. 10 = 전일 10시, 17 = 전일 17시. 둘 다 예측 시점(전일 17시) 이전이라 허용.
     #   17이 더 최신이라 기본. 베이스라인은 두 라운드 모델을 평균한다.
     round=17,
@@ -75,7 +83,7 @@ CONFIG = dict(
 )
 # 코드 안에 박힌 값들(바꿀 일은 적지만 알아둘 것):
 #   - 5%: 배치마다 발전소 번호의 5%를 0번('모르는 발전소')으로 바꿔 0번 임베딩도 학습시킨다 (학습 루프).
-#   - 1e-4: 검증 MAE가 이보다 작게 좋아진 건 '갱신'으로 치지 않는다 (조기 종료 판단).
+#   - 1e-4: 검증 MAE가 이보다 작게 좋아진 건 '갱신'으로 치지 않는다 (조기 종료 판단, epoch_avg=0 일 때만).
 #   - ±6: 전처리에서 표준화된 값을 자르는 범위 (common.Scaler).
 #   - 0~1.2: 타깃 이용률의 clip 범위 (common.build_train_frame).
 #   - 2024-04-01 / 2024-06-01: 검증·테스트 분할 경계. --final 이면 2025-04-01 부터 검증.
@@ -100,7 +108,8 @@ else:
 train = (ts < VAL_FROM).values
 val = ((ts >= VAL_FROM) & (ts < TEST_FROM)).values if TEST_FROM is not None else (ts >= VAL_FROM).values
 test = (ts >= TEST_FROM).values if TEST_FROM is not None else np.zeros(len(d), bool)
-log(f"[{C['name']}] hidden={C['hidden']} emb={C['emb_dim']} drop={C['dropout']} lr={C['lr']} seed={args.seed}")
+log(f"[{C['name']}] hidden={C['hidden']} emb={C['emb_dim']} drop={C['dropout']} lr={C['lr']} "
+    f"epoch_avg={C['epoch_avg']} seed={args.seed}")
 log(f"rows {len(d):,} | train {train.sum():,} | val {val.sum():,} | test {test.sum():,}")
 
 # 2. 전처리 ---------------------------------------------------------------------------
@@ -160,9 +169,10 @@ def val_mae(m):
 
 
 # 4. 학습 루프 ------------------------------------------------------------------------
+# epoch_avg 면 정해진 에폭 수만큼 돌며 매 에폭 가중치를 모은다. 코사인 스케줄 길이는 그대로 epochs(60).
 best = dict(mae=np.inf, state=None, epoch=0)
-bad, n, history = 0, len(Xt), []
-for ep in range(1, C["epochs"] + 1):
+bad, n, history, states = 0, len(Xt), [], []
+for ep in range(1, (C["epoch_avg"] or C["epochs"]) + 1):
     model.train()                                            # train 모드: 드롭아웃 켜짐
     perm = torch.randperm(n)                                 # 에폭마다 새로 섞는다
     tot = 0.0
@@ -179,6 +189,9 @@ for ep in range(1, C["epochs"] + 1):
     mae = val_mae(model)
     history.append(dict(epoch=ep, train_l1=tot / n, val_mae=mae, lr=opt.param_groups[0]["lr"]))
     log(f"epoch {ep:2d}  train L1 {tot / n:.4f}  val MAE {mae:.3f} kWh")
+    if C["epoch_avg"]:                                       # 에폭 평균: 고르지 않고 전부 모은다
+        states.append(copy.deepcopy(model.state_dict()))
+        continue
     if mae < best["mae"] - 1e-4:                             # 좋아졌으면 가중치 복사해 두기
         best = dict(mae=mae, state=copy.deepcopy(model.state_dict()), epoch=ep)
         bad = 0
@@ -187,17 +200,17 @@ for ep in range(1, C["epochs"] + 1):
         if bad >= C["patience"]:
             log(f"early stop at epoch {ep}")
             break
-model.load_state_dict(best["state"])                         # 최저 시점 가중치로 복원
-model.eval()
-log(f"best epoch {best['epoch']}  val MAE {best['mae']:.3f} kWh")
+if C["epoch_avg"]:
+    log(f"epoch average of {len(states)} epochs")
+else:
+    states = [best["state"]]                                 # 최저 시점 가중치 하나
+    log(f"best epoch {best['epoch']}  val MAE {best['mae']:.3f} kWh")
 
 # 5. 테스트 점수 (홀드아웃 1년, --final 이 아닐 때만) ----------------------------------
 if test.any():
-    Xs, ys, ss = tensors(test)
-    cs = cap[test]
-    with torch.no_grad():
-        p = np.clip(model(Xs, ss).numpy(), 0, None)
-    ys = ys.numpy()
+    ys, cs = y[test], cap[test]
+    p = mlp_predict({"nin": X.shape[1], "hidden": C["hidden"], "emb": C["emb_dim"], "drop": C["dropout"],
+                     "states": states}, X[test], sidx[test])   # 에폭마다 예측해 평균 (하나면 그대로)
     mae = float((np.abs(p - ys) * cs).mean())
     g = pd.DataFrame({"ts": ts[test].values, "p": p * cs, "a": ys * cs}).groupby("ts").sum()
     rel = float(np.abs(g.p - g.a).sum() / g.a.sum())
@@ -206,8 +219,10 @@ if test.any():
 # 6. 저장 -----------------------------------------------------------------------------
 tag = "final" if args.final else "test"
 path = OUT / f"model_{C['name']}_{tag}_s{args.seed}.pt"
-torch.save({"state": model.state_dict(), "hidden": tuple(C["hidden"]), "emb": C["emb_dim"], "drop": C["dropout"],
+# states = 예측에 쓸 가중치 목록 (에폭 평균이면 N 개, 아니면 1개). common.mlp_predict 가 읽는다.
+torch.save({"states": states, "hidden": tuple(C["hidden"]), "emb": C["emb_dim"], "drop": C["dropout"],
             "nin": X.shape[1], "scaler": scaler.state(), "smap": smap, "feats": list(B.FEATS),
-            "round": C["round"], "config": C, "seed": args.seed, "best_epoch": best["epoch"]}, path)
+            "round": C["round"], "config": C, "seed": args.seed,
+            "best_epoch": None if C["epoch_avg"] else best["epoch"]}, path)
 (OUT / f"history_{C['name']}_{tag}_s{args.seed}.json").write_text(json.dumps(history, indent=1), encoding="utf-8")
 log(f"saved {path}")

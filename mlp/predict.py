@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-from common import OUT, MLP, Scaler, build_test_frame, log
+from common import OUT, Scaler, build_test_frame, log, mlp_predict
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--model", default=None, help="모델 파일 하나")
@@ -46,18 +46,12 @@ log(f"models: {[p.name for p in paths]} (round {rounds.pop()})")
 d, sites, index = build_test_frame(cks[0]["round"])
 preds = []
 for p, ck in zip(paths, cks):
-    model = MLP(ck["nin"], ck["hidden"], ck["emb"], drop=ck.get("drop", 0.0))
-    model.load_state_dict(ck["state"])
-    model.eval()
-    scaler = Scaler.from_state(ck["scaler"])
-    X = scaler.transform(d[ck["feats"]].astype("float32").values)
+    X = Scaler.from_state(ck["scaler"]).transform(d[ck["feats"]].astype("float32").values)
     sidx = d.site_id.map(ck["smap"]).values.astype("int64")
-    out = []
-    with torch.no_grad():
-        for i in range(0, len(X), 262144):
-            out.append(model(torch.tensor(X[i:i + 262144]), torch.tensor(sidx[i:i + 262144])).numpy())
-    preds.append(np.clip(np.concatenate(out), 0, None))
-    log(f"  {p.name}: best epoch {ck.get('best_epoch')}, mean util {preds[-1].mean():.4f}")
+    preds.append(mlp_predict(ck, X, sidx))       # 에폭 평균 모델이면 저장된 에폭 전부의 예측 평균
+    n_ep = len(ck.get("states") or [ck["state"]])
+    log(f"  {p.name}: {'epoch avg ' + str(n_ep) if n_ep > 1 else 'best epoch ' + str(ck.get('best_epoch'))}, "
+        f"mean util {preds[-1].mean():.4f}")
 p = np.mean(preds, axis=0)                       # 시드 앙상블 = 이용률 평균
 if args.gbdt:
     gpaths = sorted(OUT.glob(args.gbdt))

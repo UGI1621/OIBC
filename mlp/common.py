@@ -75,6 +75,20 @@ def build_test_frame(rnd: int):
     return d, sites, index
 
 
+# 라운드 변화 입력: 같은 시각 예보의 (라운드 17 - 라운드 10). 예보가 전날 10시 -> 17시 사이에 바뀐 정도.
+#   GBDT 는 '바뀐 예보를 다 믿지 않는' 패턴을 배워 홀드아웃 벌금 -1.0% (3시드 모두 감소). MLP 는 효과 없음.
+RC = ["wa_cloud", "wb_cloud", "wa_rain", "wb_precip_prob", "wb_total_liq"]
+RC_FEATS = [f"r_{c}" for c in RC]
+
+
+def add_round_change(d: pd.DataFrame, d10: pd.DataFrame) -> pd.DataFrame:
+    """d(라운드 17 프레임)에 RC_FEATS 열을 붙인다. d10 은 같은 구간의 라운드 10 프레임. 키 (site_id, ts)."""
+    m = d[["site_id", "ts"]].merge(d10[["site_id", "ts"] + RC], on=["site_id", "ts"], how="left")
+    for c in RC:
+        d[f"r_{c}"] = d[c].values - m[c].values
+    return d
+
+
 class Scaler:
     """학습 행에서 중앙값·평균·표준편차를 구해 저장하고, 어느 구간에나 같은 값으로 적용한다.
     순서: NaN -> 중앙값, (x-평균)/표준편차, ±6 clip."""
@@ -123,6 +137,20 @@ class MLP(nn.Module):
         if self.emb is not None:
             x = torch.cat([x, self.emb(si)], 1)
         return self.net(x).squeeze(1)
+
+
+def mlp_predict(ck: dict, X: np.ndarray, sidx: np.ndarray, chunk: int = 262144) -> np.ndarray:
+    """체크포인트 하나로 예측(이용률, 음수는 0). 'states'(에폭 평균 모델)가 있으면 에폭마다 예측해 평균한다."""
+    model = MLP(ck["nin"], ck["hidden"], ck["emb"], drop=ck.get("drop", 0.0))
+    model.eval()
+    preds = []
+    for state in ck.get("states") or [ck["state"]]:
+        model.load_state_dict(state)
+        with torch.no_grad():
+            p = np.concatenate([model(torch.tensor(X[i:i + chunk]), torch.tensor(sidx[i:i + chunk])).numpy()
+                                for i in range(0, len(X), chunk)])
+        preds.append(np.clip(p, 0, None))
+    return np.mean(preds, axis=0)
 
 
 def site_index(sites: pd.DataFrame, known: set) -> dict:
