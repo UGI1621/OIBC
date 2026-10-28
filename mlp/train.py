@@ -67,6 +67,16 @@ sidx = d.site_id.map(smap).values.astype("int64")
 
 
 def tensors(mask):
+    """행 선택 마스크(True/False 배열)로 골라낸 행을 PyTorch 텐서 세 개로 돌려준다.
+
+    mask: 길이가 전체 행 수(len(d))인 bool 배열. fit / inner / va 중 하나를 넣는다.
+    반환 (순서대로):
+      - 입력 X: 전처리(NaN->중앙값, 표준화, ±6 clip)를 마친 수치 피처, float32, 모양 (행 수, 24)
+      - 타깃 y: 이용률 = 발전량 / 설비용량 (0~1.2 clip), float32, 모양 (행 수,)
+      - 발전소 번호 sidx: 임베딩 표에서 꺼낼 행 번호, int64, 모양 (행 수,).
+        학습(fit) 구간에 없던 발전소는 0번('모르는 발전소')
+    전역 변수 X, y, sidx 를 읽기만 한다. torch.tensor 는 값을 복사하므로 원래 numpy 배열은 그대로 남는다.
+    """
     return torch.tensor(X[mask]), torch.tensor(y[mask]), torch.tensor(sidx[mask])
 
 
@@ -82,6 +92,21 @@ if args.mode == "val":                       # 매 에폭 검증 세트도 재�
 
 
 def val_metrics(m):
+    """모델 m 으로 1년 홀드아웃(va, 2024-06~2025-05)을 예측해 점수 두 개와 예측값을 돌려준다.
+
+    val 모드에서만 부를 수 있다 (Xv, sv, yv_np, cv, ts_va 가 val 모드에서만 만들어지기 때문).
+    조기 종료 판단에는 쓰지 않고 기록용이다. 조기 종료는 학습 루프에서 inner(두 달) 점수로만 한다.
+    m.eval() 은 여기서 부르지 않으므로, 드롭아웃이 꺼진 상태로 재려면 부르는 쪽이 먼저 eval 모드로 바꿔야 한다.
+
+    계산 순서:
+      1. 예측 이용률 pv 를 구하고 음수를 0으로 자른다 (위쪽은 자르지 않음).
+      2. MAE (kWh): 행마다 |예측 이용률 - 실제 이용률| x 설비용량 = 발전소 한 곳·한 시간의 오차(kWh).
+         이를 모든 행에 대해 평균. 주간(elev>0) 행만 있으므로 '주간 발전소·시간당 평균 오차'다.
+      3. 합계 상대오차: 시각마다 모든 발전소의 예측·실제 발전량을 더해 하나로 묶은 뒤,
+         시각별 |예측 합 - 실제 합| 을 전부 더하고 실제 발전량 총합으로 나눈다.
+         발전소 전체를 한 팀으로 보는 값이라, 대회의 G1/G2 팀 구성별 점수와는 다르다.
+    반환: (MAE kWh, 합계 상대오차 0~1 비율, pv 예측 이용률 배열). pv 는 seg_metrics 가 다시 쓴다.
+    """
     with torch.no_grad():
         pv = np.clip(m(Xv, sv).numpy(), 0, None)
     mae = float((np.abs(pv - yv_np) * cv).mean())
@@ -89,6 +114,11 @@ def val_metrics(m):
     return mae, float(np.abs(g.p - g.a).sum() / g.a.sum()), pv
 
 
+# 구간 정의 (--seg-history 를 줬을 때만). seg_metrics 가 이 표를 읽어 구간별 점수를 낸다.
+# SEG[이름] = (codes, keys)
+#   codes: 홀드아웃 행마다 몇 번째 구간에 속하는지 적은 정수 배열 (길이 = 홀드아웃 행 수). -1 은 집계에서 뺀다.
+#   keys : 구간 번호 0, 1, 2, ... 에 해당하는 이름 목록 (history JSON 의 seg_keys 로 저장된다).
+# 구간 네 종류: 시각(6~20시, 그 밖은 -1), 월, 기상청 예보 운량(wa_cloud, %), 설비용량(kW).
 SEG = {}
 if args.mode == "val" and args.seg_history:
     dv = d[va]
@@ -106,7 +136,19 @@ if args.mode == "val" and args.seg_history:
 
 
 def seg_metrics(pv):
-    """구간별 MAE(kWh), 편향(%), 이용률 MAE(%). bincount 로 빠르게 집계."""
+    """홀드아웃 예측 이용률 pv 를 SEG 의 구간별로 나눠 점수 세 가지를 낸다.
+
+    pv: val_metrics 가 돌려준 예측 이용률 (홀드아웃 행 순서 그대로).
+    구간마다 계산하는 값:
+      - mae (kWh): 그 구간 행들의 |예측-실제| x 설비용량 평균. val_metrics 의 MAE 를 구간별로 쪼갠 것.
+      - bias_pct (%): (예측 발전량 합 / 실제 발전량 합 - 1) x 100.
+        양수면 그 구간을 많게(과대) 예측, 음수면 적게(과소) 예측한 것. 오차 크기가 아니라 방향을 본다.
+      - util_mae_pct (%): |예측 이용률 - 실제 이용률| 평균 x 100. 설비용량을 곱하지 않아서,
+        큰 발전소와 작은 발전소를 같은 무게로 비교할 때 쓴다.
+    np.bincount(구간 번호, 가중치) 는 구간 번호별로 가중치를 더해 주는 함수다. 구간마다 반복문을 돌지 않아 빠르다.
+    행이 하나도 없는 구간은 나눗셈 결과가 NaN 이 되므로 JSON 에 None 으로 적는다.
+    반환: {구간 종류: {"mae": [...], "bias_pct": [...], "util_mae_pct": [...]}}. 리스트 순서는 SEG 의 keys 와 같다.
+    """
     ae = np.abs(pv - yv_np) * cv; pk = pv * cv; ak = yv_np * cv; u = ae / cv
     out = {}
     for name, (codes, keys) in SEG.items():
