@@ -6,7 +6,8 @@
   gbdt_l2_test_pred.parquet, gbdt_l2_test_pred_r10.parquet   주최 측 베이스라인 재현용 (gbdt.py --objective l2, --round 10)
   gbdt_l1_test_pred*.parquet                                  gbdt.py --objective l1 --seeds 0-2
   gbdt_l1_rc_test_pred*.parquet                               gbdt.py --objective l1 --seeds 0-2 --round-change (없으면 생략)
-  gbdt_l1_rc_ws_from202101_test_pred*.parquet                 gbdt.py ... --round-change --wind-snow --from 2021-01-01 (권장, 없으면 생략)
+  gbdt_l1_rc_ws_from202101_test_pred*.parquet                 gbdt.py ... --round-change --wind-snow --from 2021-01-01 (없으면 생략)
+  gbdt_l1_rc_ws_from202101_cw_test_pred*.parquet              위 + --cap-weight (권장, 없으면 생략)
   model_big_test_s*.pt                                        train_big.py --seed N (없으면 MLP·혼합 행은 생략)
 
 출력: 모델별 MAE·팀 합계 오차·벌금(원), 구성별 벌금, 시각·월별 벌금 비중과 편향, GBDT 입력 중요도. 집계 숫자만 출력한다.
@@ -73,6 +74,9 @@ if nrc:
 gws, nws = gb("gbdt_l1_rc_ws_from202101_test_pred*.parquet")
 if nws:
     M[f"GBDT L1 + 라운드변화·풍향·눈, 2021~ {nws}시드"] = gws
+gcw, ncw = gb("gbdt_l1_rc_ws_from202101_cw_test_pred*.parquet")
+if ncw:
+    M[f"GBDT 위 + 용량 가중치 {ncw}시드"] = gcw
 mm, nm = mlp_preds("model_big_test_s*.pt")
 if nm:
     M[f"큰 MLP {nm}시드 평균"] = mm
@@ -81,7 +85,9 @@ if nm:
     if nrc:
         M["혼합 MLP 0.7 + GBDT(라운드 변화) 0.3"] = 0.7 * mm + 0.3 * grc
     if nws:
-        M["혼합 MLP 0.7 + GBDT(권장) 0.3"] = 0.7 * mm + 0.3 * gws
+        M["혼합 MLP 0.7 + GBDT(풍향·눈, 2021~) 0.3"] = 0.7 * mm + 0.3 * gws
+    if ncw:
+        M["혼합 MLP 0.7 + GBDT(권장, 용량 가중) 0.3"] = 0.7 * mm + 0.3 * gcw
 
 base_pen, _ = penalty(M["주최 측 베이스라인 (L2, 라운드10·17 평균)"])
 revenue = float((pd.DataFrame({"ts": d.ts, "a": y * cap}).groupby("ts").a.sum() * W).sum())
