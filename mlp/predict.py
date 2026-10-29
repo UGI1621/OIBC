@@ -1,6 +1,7 @@
 """저장된 모델로 대회 채점 구간(2025-06-01 ~ 2026-06-01, 8,760시각) 예측.
 
   python mlp/predict.py                                    # 기본: mlp/outputs/model_big_final_s*.pt 전부 평균
+  python mlp/predict.py --mlp-name bigNB                   # 권장: train_big.py --neighbors --final 로 만든 model_bigNB_final_s*.pt
   python mlp/predict.py --models a.pt,b.pt,c.pt            # 지정한 모델들의 예측 평균 (시드 앙상블)
   python mlp/predict.py --model a.pt                       # 모델 하나
   옵션 --composition snake|ref|<csv 경로>   (csv 는 site_id, group 열. 권장: mlp/outputs/composition_stn.csv, compose.py 로 생성)
@@ -21,11 +22,12 @@ import numpy as np
 import pandas as pd
 import torch
 
-from common import OUT, Scaler, build_test_frame, log, mlp_predict
+from common import NB_FEATS, OUT, Scaler, add_neighbors, build_test_frame, log, mlp_predict
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--model", default=None, help="모델 파일 하나")
 ap.add_argument("--models", default=None, help="쉼표로 구분한 모델 파일 여러 개. 예측(이용률)을 평균한다")
+ap.add_argument("--mlp-name", default="big", help="model_<이름>_final_s*.pt 를 읽는다. 이웃 시각 MLP 는 bigNB")
 ap.add_argument("--composition", default="snake", help="snake | ref | 구성 csv 경로 (site_id, group)")
 ap.add_argument("--gbdt", default=None, help="GBDT 최종 예측 parquet glob (예: 'gbdt_l1_final_pred*.parquet'). 여러 개면 평균")
 ap.add_argument("--w-mlp", type=float, default=0.7, help="--gbdt 가 있을 때 MLP 가중치. GBDT 는 1 - w")
@@ -36,7 +38,7 @@ if args.models:
 elif args.model:
     paths = [Path(args.model)]
 else:
-    paths = sorted(OUT.glob("model_big_final_s*.pt")) or [OUT / "model_big_final_s0.pt"]   # 메인 = 큰 신경망
+    paths = sorted(OUT.glob(f"model_{args.mlp_name}_final_s*.pt")) or [OUT / f"model_{args.mlp_name}_final_s0.pt"]
 assert paths and all(p.exists() for p in paths), paths
 
 cks = [torch.load(p, weights_only=False) for p in paths]
@@ -45,6 +47,8 @@ assert len(rounds) == 1, f"모델들의 예보 라운드가 다름: {rounds}"
 log(f"models: {[p.name for p in paths]} (round {rounds.pop()})")
 
 d, sites, index = build_test_frame(cks[0]["round"])
+if any(set(NB_FEATS) & set(ck["feats"]) for ck in cks):                # --neighbors 로 학습한 MLP
+    d = add_neighbors(d, "test", cks[0]["round"])
 preds = []
 for p, ck in zip(paths, cks):
     X = Scaler.from_state(ck["scaler"]).transform(d[ck["feats"]].astype("float32").values)

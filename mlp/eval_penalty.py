@@ -10,6 +10,7 @@
   gbdt_l1_rc_ws_from202101_cw_test_pred*.parquet              위 + --cap-weight (없으면 생략)
   gbdt_l1_rc_ws_from202101_cw_nb_test_pred*.parquet           위 + --neighbors (권장, 없으면 생략)
   model_big_test_s*.pt                                        train_big.py --seed N (없으면 MLP·혼합 행은 생략)
+  model_bigNB_test_s*.pt                                      train_big.py --neighbors --seed N (권장, 없으면 생략)
 
 출력: 모델별 MAE·팀 합계 오차·벌금(원), 구성별 벌금, 시각·월별 벌금 비중과 편향, GBDT 입력 중요도. 집계 숫자만 출력한다.
 k 는 학습 구간 smp.csv 에 없어서 규칙(파일 표기 11~15시 = 3)으로 만든다. 주간(elev > 0) 행만 채점한다.
@@ -18,10 +19,11 @@ import json
 from pathlib import Path
 import numpy as np, pandas as pd, torch, lightgbm as lgb
 
-from common import B, DATA, KST, OUT, Scaler, build_train_frame, mlp_predict  # noqa: E402
+from common import B, DATA, KST, OUT, Scaler, add_neighbors, build_train_frame, mlp_predict  # noqa: E402
 
 TEST_FROM = pd.Timestamp("2024-06-01 01:00", tz=KST)
 d, sites = build_train_frame(TEST_FROM, 17)
+d = add_neighbors(d, "train", 17)                                  # 이웃 시각 MLP(bigNB) 입력용
 d = d[d.ts < pd.Timestamp("2025-06-01 01:00", tz=KST)].reset_index(drop=True)
 cap, y = d.cap.values, d.y.values
 key = pd.DataFrame({"site_id": d.site_id.values, "ts": d.ts.values})  # gbdt.py 는 ts 를 naive UTC 로 저장
@@ -95,7 +97,12 @@ if nm:
     if ncw:
         M["혼합 MLP 0.7 + GBDT(용량 가중) 0.3"] = 0.7 * mm + 0.3 * gcw
     if nnb:
-        M["혼합 MLP 0.7 + GBDT(권장, 이웃 시각) 0.3"] = 0.7 * mm + 0.3 * gnb
+        M["혼합 MLP 0.7 + GBDT(이웃 시각) 0.3"] = 0.7 * mm + 0.3 * gnb
+mn, nn_ = mlp_preds("model_bigNB_test_s*.pt")
+if nn_:
+    M[f"큰 MLP + 이웃 시각 {nn_}시드 평균"] = mn
+    if nnb:
+        M["혼합 MLP(이웃 시각) 0.7 + GBDT(이웃 시각) 0.3 (권장)"] = 0.7 * mn + 0.3 * gnb
 
 base_pen, _ = penalty(M["주최 측 베이스라인 (L2, 라운드10·17 평균)"])
 revenue = float((pd.DataFrame({"ts": d.ts, "a": y * cap}).groupby("ts").a.sum() * W).sum())
@@ -107,7 +114,7 @@ for name, p in M.items():
     res[name] = dict(mae=mae, rel=rel, pen=pen)
     print(f"{name:40s} {mae:7.3f} {rel:7.2f} {pen/1e6:10.1f}백만 {100*(pen/base_pen-1):+9.1f}% {100*pen/revenue:7.2f}%")
 
-best = list(M)[-1] if nm else f"GBDT L1 {ng}시드 평균"; pb = M[best]
+best = list(M)[-1] if (nm or nn_) else f"GBDT L1 {ng}시드 평균"; pb = M[best]
 print(f"\n[구성별 벌금] 모델 = {best}")
 lb, _ = penalty(pb, "one_team(하한)")
 for c in COMPS:

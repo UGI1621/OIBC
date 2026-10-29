@@ -3,6 +3,8 @@
   python mlp/train_big.py              # 홀드아웃 1년(2024-06~2025-05)으로 테스트 점수 확인
   python mlp/train_big.py --final      # 학습 구간 전체로 학습해 제출용 모델 저장
   python mlp/train_big.py --fold 2023  # 다른 연도 검증: 2023-06~2024-05 를 테스트로 (mlp/cv.py 가 읽음)
+  python mlp/train_big.py --neighbors  # 권장 (2026-10-29): 이웃 시각·하루 요약 14개 입력 추가 -> model_bigNB_*
+                                       #   혼합 벌금 2023-24 −2.0%, 2024-25 −0.8% (6시드). 실험 기록 ugi-exp-mlp-neighbor-hours.md
 
 train_small.py 와 뼈대가 같고, 맨 위 CONFIG 만 다르다.
 데이터 이름: 학습(train) / 검증(val, 조기 종료용 두 달) / 테스트(test, 홀드아웃 1년).
@@ -18,7 +20,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 
-from common import B, KST, OUT, Scaler, build_train_frame, log, mlp_predict, site_index
+from common import B, KST, NB_FEATS, OUT, Scaler, add_neighbors, build_train_frame, log, mlp_predict, site_index
 
 # ----------------------------------------------------------------------------- 설정
 # 하이퍼파라미터. 값을 바꾸면 파일 이름(name)도 같이 바꿔 두면 산출물이 섞이지 않는다.
@@ -96,14 +98,20 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--final", action="store_true", help="학습 구간 전체로 학습 (제출용)")
 ap.add_argument("--seed", type=int, default=0)
 ap.add_argument("--fold", type=int, default=2024, help="테스트 연도 Y: Y-06 ~ Y+1-05. 검증은 Y-04~05. 기본 2024")
+ap.add_argument("--neighbors", action="store_true", help="실험: 이웃 시각·하루 요약 예보 14개 입력 추가 (GBDT 에서는 채택)")
 args = ap.parse_args()
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)
 C = CONFIG
+if args.neighbors:
+    C = dict(C, name=f"{C['name']}NB")                    # model_bigNB_..., pred_bigNB_... 로 저장
 
 # 1. 데이터 ---------------------------------------------------------------------------
 # 행 하나 = (발전소, 시각). 주간(elev>0)만. 타깃 y = 발전량 / 설비용량 (0~1.2)
 d, sites = build_train_frame(pd.Timestamp(f"{C['train_from']} 01:00", tz=KST), C["round"])
+FEATS = list(B.FEATS) + (NB_FEATS if args.neighbors else [])
+if args.neighbors:
+    d = add_neighbors(d, "train", C["round"])
 ts = d.ts
 if args.final:
     VAL_FROM, TEST_FROM = pd.Timestamp("2025-04-01 01:00", tz=KST), None
@@ -119,7 +127,7 @@ log(f"rows {len(d):,} | train {train.sum():,} | val {val.sum():,} | test {test.s
 
 # 2. 전처리 ---------------------------------------------------------------------------
 # 수치 24개: 학습 행 통계로 NaN->중앙값, 표준화, ±6 clip. 임베딩 인덱스는 그대로.
-F = d[B.FEATS].astype("float32").values
+F = d[FEATS].astype("float32").values
 y = d.y.values.astype("float32")
 cap = d.cap.values.astype("float32")
 scaler = Scaler().fit(F[train])
@@ -229,7 +237,7 @@ if test.any():                                               # 테스트 예측 
 path = OUT / f"model_{C['name']}_{tag}_s{args.seed}.pt"
 # states = 예측에 쓸 가중치 목록 (에폭 평균이면 N 개, 아니면 1개). common.mlp_predict 가 읽는다.
 torch.save({"states": states, "hidden": tuple(C["hidden"]), "emb": C["emb_dim"], "drop": C["dropout"],
-            "nin": X.shape[1], "scaler": scaler.state(), "smap": smap, "feats": list(B.FEATS),
+            "nin": X.shape[1], "scaler": scaler.state(), "smap": smap, "feats": FEATS,
             "round": C["round"], "config": C, "seed": args.seed,
             "best_epoch": None if C["epoch_avg"] else best["epoch"]}, path)
 (OUT / f"history_{C['name']}_{tag}_s{args.seed}.json").write_text(json.dumps(history, indent=1), encoding="utf-8")
