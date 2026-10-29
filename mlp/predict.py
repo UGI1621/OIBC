@@ -3,14 +3,14 @@
   python mlp/predict.py                                    # 기본: mlp/outputs/model_big_final_s*.pt 전부 평균
   python mlp/predict.py --models a.pt,b.pt,c.pt            # 지정한 모델들의 예측 평균 (시드 앙상블)
   python mlp/predict.py --model a.pt                       # 모델 하나
-  옵션 --composition snake|ref|<csv 경로>   (csv 는 site_id, group 열. 권장: mlp/outputs/composition_opt.csv, compose.py 로 생성)
+  옵션 --composition snake|ref|<csv 경로>   (csv 는 site_id, group 열. 권장: mlp/outputs/composition_stn.csv, compose.py 로 생성)
 
 출력 (mlp/outputs/):
   composition.csv            발전소 253개소의 G1/G2 배정
   forecast.csv               그룹별·시각별 예측 kWh (17,520행)
   per_site_forecast.parquet  발전소별 예측 (구성 최적화용)
 구성 snake = 용량 큰 순서로 G1,G2,G2,G1 반복 배정. ref = sites.csv 의 current_group(A->G1, B->G2).
-  csv = compose.py 가 홀드아웃 오차로 snake 를 고친 구성 (홀드아웃 벌금 기대 -0.7% 안팎).
+  csv = compose.py 의 지점 나누기 (같은 예보 지점 발전소를 두 팀에 번갈아). 혼합 벌금 2024-25 −0.5%, 2023-24 −0.8%.
 """
 from __future__ import annotations
 

@@ -2,6 +2,7 @@
 
   python mlp/train_big.py              # 홀드아웃 1년(2024-06~2025-05)으로 테스트 점수 확인
   python mlp/train_big.py --final      # 학습 구간 전체로 학습해 제출용 모델 저장
+  python mlp/train_big.py --fold 2023  # 다른 연도 검증: 2023-06~2024-05 를 테스트로 (mlp/cv.py 가 읽음)
 
 train_small.py 와 뼈대가 같고, 맨 위 CONFIG 만 다르다.
 데이터 이름: 학습(train) / 검증(val, 조기 종료용 두 달) / 테스트(test, 홀드아웃 1년).
@@ -87,12 +88,14 @@ CONFIG = dict(
 #   - 1e-4: 검증 MAE가 이보다 작게 좋아진 건 '갱신'으로 치지 않는다 (조기 종료 판단, epoch_avg=0 일 때만).
 #   - ±6: 전처리에서 표준화된 값을 자르는 범위 (common.Scaler).
 #   - 0~1.2: 타깃 이용률의 clip 범위 (common.build_train_frame).
-#   - 2024-04-01 / 2024-06-01: 검증·테스트 분할 경계. --final 이면 2025-04-01 부터 검증.
+#   - 2024-04-01 / 2024-06-01: 검증·테스트 분할 경계 (--fold 2024 기본). --fold Y 면 Y-04-01 / Y-06-01 ~ Y+1-06-01.
+#     --final 이면 2025-04-01 부터 검증.
 # ------------------------------------------------------------------------------------
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--final", action="store_true", help="학습 구간 전체로 학습 (제출용)")
 ap.add_argument("--seed", type=int, default=0)
+ap.add_argument("--fold", type=int, default=2024, help="테스트 연도 Y: Y-06 ~ Y+1-05. 검증은 Y-04~05. 기본 2024")
 args = ap.parse_args()
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)
@@ -105,10 +108,11 @@ ts = d.ts
 if args.final:
     VAL_FROM, TEST_FROM = pd.Timestamp("2025-04-01 01:00", tz=KST), None
 else:
-    VAL_FROM, TEST_FROM = pd.Timestamp("2024-04-01 01:00", tz=KST), pd.Timestamp("2024-06-01 01:00", tz=KST)
+    VAL_FROM, TEST_FROM = [pd.Timestamp(f"{args.fold}-{m}-01 01:00", tz=KST) for m in ("04", "06")]
+TEST_TO = pd.Timestamp(f"{args.fold + 1}-06-01 01:00", tz=KST)
 train = (ts < VAL_FROM).values
 val = ((ts >= VAL_FROM) & (ts < TEST_FROM)).values if TEST_FROM is not None else (ts >= VAL_FROM).values
-test = (ts >= TEST_FROM).values if TEST_FROM is not None else np.zeros(len(d), bool)
+test = ((ts >= TEST_FROM) & (ts < TEST_TO)).values if TEST_FROM is not None else np.zeros(len(d), bool)
 log(f"[{C['name']}] hidden={C['hidden']} emb={C['emb_dim']} drop={C['dropout']} lr={C['lr']} "
     f"epoch_avg={C['epoch_avg']} seed={args.seed}")
 log(f"rows {len(d):,} | train {train.sum():,} | val {val.sum():,} | test {test.sum():,}")
@@ -215,10 +219,13 @@ if test.any():
     mae = float((np.abs(p - ys) * cs).mean())
     g = pd.DataFrame({"ts": ts[test].values, "p": p * cs, "a": ys * cs}).groupby("ts").sum()
     rel = float(np.abs(g.p - g.a).sum() / g.a.sum())
-    log(f"TEST 2024-06~2025-05  MAE {mae:.2f} kWh/site-hour  팀 합계 상대오차 {rel * 100:.2f}%")
+    log(f"TEST {args.fold}-06~{args.fold + 1}-05  MAE {mae:.2f} kWh/site-hour  팀 합계 상대오차 {rel * 100:.2f}%")
 
 # 6. 저장 -----------------------------------------------------------------------------
-tag = "final" if args.final else "test"
+tag = "final" if args.final else ("test" if args.fold == 2024 else f"fold{args.fold}")
+if test.any():                                               # 테스트 예측 저장 (cv.py·eval 용). ts 는 naive UTC
+    pd.DataFrame({"site_id": d.site_id[test].values, "ts": ts[test].values, "p": p}).to_parquet(
+        OUT / f"pred_{C['name']}_{tag}_s{args.seed}.parquet", index=False)
 path = OUT / f"model_{C['name']}_{tag}_s{args.seed}.pt"
 # states = 예측에 쓸 가중치 목록 (에폭 평균이면 N 개, 아니면 1개). common.mlp_predict 가 읽는다.
 torch.save({"states": states, "hidden": tuple(C["hidden"]), "emb": C["emb_dim"], "drop": C["dropout"],
