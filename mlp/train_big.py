@@ -3,6 +3,7 @@
   python mlp/train_big.py              # 홀드아웃 1년(2024-06~2025-05)으로 테스트 점수 확인
   python mlp/train_big.py --final      # 학습 구간 전체로 학습해 제출용 모델 저장
   python mlp/train_big.py --fold 2023  # 다른 연도 검증: 2023-06~2024-05 를 테스트로 (mlp/cv.py 가 읽음)
+  python mlp/train_big.py --noise 1.0  # 실험: 예보 오차 노이즈 주입 (채택 안 함, 결과는 ugi-exp-noise-injection.md)
 
 train_small.py 와 뼈대가 같고, 맨 위 CONFIG 만 다르다.
 데이터 이름: 학습(train) / 검증(val, 조기 종료용 두 달) / 테스트(test, 홀드아웃 1년).
@@ -96,10 +97,13 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--final", action="store_true", help="학습 구간 전체로 학습 (제출용)")
 ap.add_argument("--seed", type=int, default=0)
 ap.add_argument("--fold", type=int, default=2024, help="테스트 연도 Y: Y-06 ~ Y+1-05. 검증은 Y-04~05. 기본 2024")
+ap.add_argument("--noise", type=float, default=0.0, help="예보 오차 노이즈 배율 (0 = 끔). 실험용, 채택 안 함")
 args = ap.parse_args()
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)
 C = CONFIG
+if args.noise:
+    C = dict(C, name=f"{C['name']}N")                     # model_bigN_..., pred_bigN_... 로 저장
 
 # 1. 데이터 ---------------------------------------------------------------------------
 # 행 하나 = (발전소, 시각). 주간(elev>0)만. 타깃 y = 발전량 / 설비용량 (0~1.2)
@@ -124,6 +128,32 @@ y = d.y.values.astype("float32")
 cap = d.cap.values.astype("float32")
 scaler = Scaler().fit(F[train])
 X = scaler.transform(F)
+
+# 예보 오차 노이즈 (--noise, 실험 브랜치 ugi/exp-noise-injection). experiments/synth_seeds.py 방식.
+#   학습 행에서 (실측 - 예보) 표준편차를 열마다 구해 표준화 단위로 바꾸고, 학습 배치마다 그 크기의 정규 잡음을 입력에 더한다.
+#   실측이 있는 날씨 열 13개만. 2023-24·2024-25 모두 벌금이 늘어(+3.5%, +2.0%, 12번 비교 모두 악화) 채택하지 않았다.
+nz = None
+if args.noise:
+    from common import DATA
+    OA = ["wa_cloud", "wa_temp", "wa_humidity", "wa_rain", "wa_wind_speed", "wa_ground_press"]
+    OB = ["wb_cloud", "wb_temp", "wb_rel_hum", "wb_uv_idx", "wb_vis", "wb_wind_speed", "wb_dew_point"]
+    oa = pd.read_parquet(DATA / "train" / "observed_wa.parquet", columns=["wa_station", "ts"] + OA)
+    ob = pd.read_parquet(DATA / "train" / "observed_wb.parquet", columns=["wb_station", "ts"] + OB)
+    for o_ in (oa, ob):
+        o_["ts"] = pd.to_datetime(o_.ts)
+    oa.loc[oa.wa_wind_speed > 50, "wa_wind_speed"] = np.nan                 # 실측 이상값 (synth_seeds.py 와 같은 기준)
+    ob.loc[ob.wb_cloud > 100, "wb_cloud"] = np.nan
+    ob.loc[ob.wb_uv_idx > 15, "wb_uv_idx"] = np.nan
+    ob.loc[ob.wb_vis > 50, "wb_vis"] = np.nan
+    ob.loc[ob.wb_wind_speed > 200, "wb_wind_speed"] = np.nan
+    dtr = d.loc[train, ["wa_station", "wb_station", "ts"] + OA + OB]
+    obs = (dtr[["wa_station", "wb_station", "ts"]]
+           .merge(oa.rename(columns={c: c + "_o" for c in OA}), on=["wa_station", "ts"], how="left")
+           .merge(ob.rename(columns={c: c + "_o" for c in OB}), on=["wb_station", "ts"], how="left"))
+    sd = np.array([np.nanstd(obs[c + "_o"].values - dtr[c].values) if c in OA + OB else 0.0 for c in B.FEATS])
+    nz = torch.tensor((sd / scaler.sd * args.noise).astype("float32"))
+    log("noise sd (표준화 단위): " + ", ".join(f"{c}={v:.2f}" for c, v in zip(B.FEATS, nz.numpy()) if v > 0))
+    del oa, ob, dtr, obs
 smap = site_index(sites, set(d.site_id[train].unique()))   # 학습에 없던 발전소는 0번 토큰
 sidx = d.site_id.map(smap).values.astype("int64")
 
@@ -186,7 +216,8 @@ for ep in range(1, (C["epoch_avg"] or C["epochs"]) + 1):
         site_b = st[b].clone()
         site_b[torch.rand(len(site_b)) < 0.05] = 0           # 5%는 '모르는 발전소'로 바꿔 0번 임베딩도 학습
         opt.zero_grad()
-        loss = loss_fn(model(Xt[b], site_b), yt[b])          # 순전파 + 손실
+        xb = Xt[b] if nz is None else Xt[b] + torch.randn(len(b), Xt.shape[1]) * nz   # --noise 면 입력에 잡음
+        loss = loss_fn(model(xb, site_b), yt[b])             # 순전파 + 손실
         loss.backward()                                      # 역전파
         opt.step()                                           # 가중치 갱신
         tot += loss.item() * len(b)
