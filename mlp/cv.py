@@ -11,6 +11,9 @@ MLP: mlp/outputs/pred_big_{test|foldY}_s*.parquet 가 있으면 혼합(MLP 0.7 +
   train_big.py --fold Y --seed N 으로 만든다 (--fold 2024 는 tag 'test').
 구성: snake, 그리고 mlp/outputs/composition_stn.csv 가 있으면 지점 나누기도 채점한다.
 채택 규칙(권장): 모든 연도에서 같은 시드끼리 비교가 대부분 줄 때만 채택. 2022 연도는 발전소 31~80개뿐이라 참고용.
+--seen-only: 학습에 있던 발전소(Y-04-01 이전에 발전량이 있는 곳)만 채점한다. 실제 대회는 모든 발전소를 학습에서 본 뒤
+  예측하므로 이쪽이 대회와 더 가깝다. 검증 연도의 '처음 보는 발전소'는 MLP 편향을 해마다 크게 바꾼다
+  (2023-24 +5.6%, 2024-25 −2.5%; 학습에 있던 발전소는 두 해 모두 0~+0.6%).
 출력은 집계 숫자만 (벌금 백만 원, ② = 시드 평균 예측의 벌금).
 """
 from __future__ import annotations
@@ -29,6 +32,7 @@ ap.add_argument("--a", default="rc", help="기준 GBDT 설정 (기본: 10-28 상
 ap.add_argument("--b", default="rc,ws,long,cw", help="비교 GBDT 설정 (기본: 10-29 권장)")
 ap.add_argument("--folds", default="2022,2023,2024")
 ap.add_argument("--seeds", default="0-2")
+ap.add_argument("--seen-only", action="store_true", help="학습에 있던 발전소만 채점 (대회와 같은 조건)")
 args = ap.parse_args()
 folds = [int(x) for x in args.folds.split(",")]
 seeds = list(range(int(args.seeds.split("-")[0]), int(args.seeds.split("-")[-1]) + 1))
@@ -50,6 +54,7 @@ smp["ts"] = pd.to_datetime(smp.ts).dt.tz_convert(KST)
 W = smp.set_index("ts").pipe(lambda s: s.smp * np.where(s.index.hour.isin(range(11, 16)), 3, 1))
 capk = sites.set_index("site_id").capacity_kw
 order = capk.sort_values(ascending=False).index
+first = d.groupby("site_id").ts.min()                                   # 발전소별 첫 데이터 시각
 COMPS = {"snake": pd.Series({s: ["G1", "G2", "G2", "G1"][i % 4] for i, s in enumerate(order)})}
 if (OUT / "composition_stn.csv").exists():
     COMPS["지점 나누기"] = pd.read_csv(OUT / "composition_stn.csv").set_index("site_id").group
@@ -59,6 +64,8 @@ summary = []
 for Y in folds:
     T1, T2 = [pd.Timestamp(f"{y}-06-01 01:00", tz=KST) for y in (Y, Y + 1)]
     te = ((d.ts >= T1) & (d.ts < T2)).values
+    if args.seen_only:
+        te &= (d.site_id.map(first) < pd.Timestamp(f"{Y}-04-01 01:00", tz=KST)).values
     h = d[te].reset_index(drop=True)
     cap, y = h.cap.values, h.y.values
 
@@ -106,5 +113,6 @@ for Y in folds:
                 row[f"{comp}%"] = 100 * (pen(0.7 * mm + 0.3 * gb, comp) / row["혼합_B"] - 1)
     summary.append(row)
 
-print(f"\n[A = {CFG['A']['name']}  vs  B = {CFG['B']['name']}]  벌금 백만 원 (②), 구성 snake")
+print(f"\n[A = {CFG['A']['name']}  vs  B = {CFG['B']['name']}]  벌금 백만 원 (②), 구성 snake"
+      + (", 학습에 있던 발전소만" if args.seen_only else ""))
 print(pd.DataFrame(summary).set_index("연도").round(2).to_string())
