@@ -7,6 +7,7 @@
 GBDT 설정 토큰 (쉼표로 구분):
   rc   라운드 변화 5개 (common.RC_FEATS)      ws  풍향 sin/cos + 눈·결빙 9개 (common.WS_FEATS)
   long 2021-01 부터 학습 (없으면 평가 직전 1년) cw  용량 가중치
+  nb   이웃 시각·하루 요약 14개 (common.NB_FEATS, 실험 브랜치 ugi/exp-neighbor-hours)
 MLP: mlp/outputs/pred_big_{test|foldY}_s*.parquet 가 있으면 혼합(MLP 0.7 + GBDT 0.3)도 채점한다.
   train_big.py --fold Y --seed N 으로 만든다 (--fold 2024 는 tag 'test').
 구성: snake, 그리고 mlp/outputs/composition_stn.csv 가 있으면 지점 나누기도 채점한다.
@@ -25,7 +26,8 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 
-from common import B, DATA, KST, OUT, RC_FEATS, WS_FEATS, add_round_change, add_wind_snow, build_train_frame, log
+from common import (B, DATA, KST, NB_FEATS, OUT, RC_FEATS, WS_FEATS, add_neighbors, add_round_change, add_wind_snow,
+                    build_train_frame, log)
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--a", default="rc", help="기준 GBDT 설정 (기본: 10-28 상태)")
@@ -40,8 +42,9 @@ seeds = list(range(int(args.seeds.split("-")[0]), int(args.seeds.split("-")[-1])
 
 def parse(spec):
     t = set(x for x in spec.split(",") if x)
-    assert t <= {"rc", "ws", "long", "cw"}, t
-    return dict(feats=B.FEATS + (RC_FEATS if "rc" in t else []) + (WS_FEATS if "ws" in t else []),
+    assert t <= {"rc", "ws", "long", "cw", "nb"}, t
+    return dict(feats=B.FEATS + (RC_FEATS if "rc" in t else []) + (WS_FEATS if "ws" in t else [])
+                + (NB_FEATS if "nb" in t else []),
                 long="long" in t, cw="cw" in t, name=spec or "24개")
 
 
@@ -49,6 +52,8 @@ CFG = {"A": parse(args.a), "B": parse(args.b)}
 L0 = pd.Timestamp("2021-01-01 01:00", tz=KST)
 d, sites = build_train_frame(L0, 17)
 d = add_wind_snow(add_round_change(d, build_train_frame(L0, 10)[0]))
+if any("nb" in c["name"] for c in CFG.values()):
+    d = add_neighbors(d, "train", 17)
 smp = pd.read_csv(DATA / "train" / "smp.csv")
 smp["ts"] = pd.to_datetime(smp.ts).dt.tz_convert(KST)
 W = smp.set_index("ts").pipe(lambda s: s.smp * np.where(s.index.hour.isin(range(11, 16)), 3, 1))

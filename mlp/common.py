@@ -99,6 +99,36 @@ WS_FEATS = ["wa_wind_dir_sin", "wa_wind_dir_cos", "wb_wind_dir_sin", "wb_wind_di
             "wa_snow", "wb_snow_prob", "wb_ice_prob", "wb_snow", "wb_ice"]
 
 
+# 이웃 시각·하루 요약 입력 (실험 브랜치 ugi/exp-neighbor-hours). 모두 같은 라운드 예보라 예측 마감 전에 이미 있는 값이다.
+#   이웃 시각: 같은 지점 예보의 1시간 전·후 값. 예보가 시간을 조금 어긋나게 맞히는 오차를 줄이려는 것.
+#   하루 요약: 그날 8~17시 예보의 구름 평균·표준편차, 강수 시간 수, 최대 강수확률. 종일 흐림인지, 구름이 오락가락하는지.
+NB_COLS = {"wa": ["wa_cloud", "wa_rain"], "wb": ["wb_cloud", "wb_precip_prob"]}
+NB_FEATS = ([f"{c}_{k}" for cs in NB_COLS.values() for c in cs for k in ("m1", "p1")]
+            + ["day_wa_cloud_mean", "day_wa_cloud_std", "day_wb_cloud_mean", "day_wb_cloud_std",
+               "day_wa_rain_hours", "day_wb_precip_prob_max"])
+
+
+def add_neighbors(d: pd.DataFrame, split: str, rnd: int) -> pd.DataFrame:
+    """d 에 NB_FEATS 를 붙인다. 지점별 예보 전체(밤 포함)에서 계산해 (지점, ts) 와 (지점, 날짜) 로 붙인다."""
+    fa, fb = load_forecasts(split, rnd)
+    for pre, f in (("wa", fa), ("wb", fb)):
+        st, cols = f"{pre}_station", NB_COLS[pre]
+        f = f[[st, "ts"] + cols]
+        for k, h in (("m1", -1), ("p1", 1)):                             # ts 의 h 시간 뒤 예보를 ts 에 붙인다
+            s = f.assign(ts=f.ts - pd.Timedelta(hours=h)).rename(columns={c: f"{c}_{k}" for c in cols})
+            d = d.merge(s, on=[st, "ts"], how="left")
+        day = f[f.ts.dt.hour.between(8, 17)].assign(date=lambda x: x.ts.dt.date)
+        g = day.groupby([st, "date"])
+        cl = f"{pre}_cloud"
+        agg = pd.DataFrame({f"day_{cl}_mean": g[cl].mean(), f"day_{cl}_std": g[cl].std()})
+        if pre == "wa":
+            agg["day_wa_rain_hours"] = g.wa_rain.apply(lambda r: float((r > 0).sum()))
+        else:
+            agg["day_wb_precip_prob_max"] = g.wb_precip_prob.max()
+        d = d.assign(date=d.ts.dt.date).merge(agg.reset_index(), on=[st, "date"], how="left").drop(columns="date")
+    return d
+
+
 def add_wind_snow(d: pd.DataFrame) -> pd.DataFrame:
     """풍향(도)을 sin/cos 로 바꿔 WS_FEATS 를 갖춘다. 359도와 1도가 가깝게 보이도록."""
     for c in ("wa_wind_dir", "wb_wind_dir"):

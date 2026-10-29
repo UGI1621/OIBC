@@ -2,16 +2,17 @@
 
 `ugi/penalty-analysis-2026-10-28` 위에 쌓은 브랜치입니다. 28 브랜치까지의 작업은 [ugi-penalty-analysis-2026-10-28.md](ugi-penalty-analysis-2026-10-28.md)에 있습니다.
 
-이 브랜치에서 한 일은 크게 두 가지입니다.
+이 브랜치에서 한 일은 크게 세 가지입니다.
 1. 채점 방식에 맞추기: GBDT 학습 가중치, 팀 구성
 2. **과적합 검증:** 지금까지 한 해(2024-25)만 보고 내린 결정들을 다른 해(2023-24)로 다시 확인했습니다.
+3. GBDT에 이웃 시각·하루 요약 예보 추가 (실험 브랜치에서 시험한 뒤 합침)
 
 ## 결과
 
 | 혼합 벌금 (MLP 0.7 + GBDT 0.3, snake 구성) | 10-28 상태 | 이 브랜치 | 차이 |
 |---|---|---|---|
-| 2024-06~2025-05 (지금까지 본 해) | 196.5백만 원 | 190.8백만 원 | −2.9% |
-| 2023-06~2024-05 (새로 확인한 해) | 111.0백만 원 | 107.7백만 원 | **−3.0%** |
+| 2024-06~2025-05 (지금까지 본 해) | 196.5백만 원 | 188.7백만 원 | −4.0% |
+| 2023-06~2024-05 (새로 확인한 해) | 111.0백만 원 | 106.6백만 원 | **−4.0%** |
 
 - 팀 구성을 지점 나누기로 바꾸면 −0.6~−0.8%가 더 줄어듭니다.
 - 10-28 상태는 28 브랜치의 앞 단계(에폭 평균 + 라운드 변화, 학습 시작일 2023-06)입니다.
@@ -21,7 +22,7 @@
 | 항목 | 설정 |
 |---|---|
 | MLP | 입력 24개, 2021-01부터 학습, 16에폭 예측 평균 |
-| GBDT | 입력 38개 (기본 24 + 라운드 변화 5 + 풍향 4 + 눈·결빙 5), 2021-01부터 학습, 용량 가중치 |
+| GBDT | 입력 52개 (기본 24 + 라운드 변화 5 + 풍향 4 + 눈·결빙 5 + 이웃 시각·하루 요약 14), 2021-01부터 학습, 용량 가중치 |
 | 혼합 | MLP 0.7 + GBDT 0.3 |
 | 팀 구성 | 지점 나누기 (`mlp/outputs/composition_stn.csv`) |
 
@@ -65,18 +66,21 @@
 - 학습에 있던 발전소만 보면 두 해 모두 0~+0.6%입니다. 편향은 거의 전부 처음 보는 발전소에서 나왔습니다(+5.6% / −2.5%).
 - **실제 대회에는 처음 보는 발전소가 없습니다.** 253개소 모두 2024년 안에 데이터가 시작되기 때문입니다. 그래서 검증 때는 `cv.py --seen-only`(학습에 있던 발전소만 채점)도 함께 봅니다.
 
-**6. 시도했지만 채택하지 않은 실험 (실험 브랜치로 분리)**
+**6. 실험 브랜치**
 
-| 실험 브랜치 | 내용 | 결과 |
-|---|---|---|
-| `ugi/exp-noise-injection` | MLP 입력에 예보 오차만큼 잡음 주입 | 2023-24 +3.5%, 2024-25 +2.0% (12번 비교 모두 악화) |
+각 실험은 브랜치를 따로 만들어 시험했습니다. 채택한 것만 이 브랜치에 합쳤고, 버린 것은 브랜치에 기록으로 남겼습니다.
+
+| 실험 브랜치 | 내용 | 결과 | 판정 |
+|---|---|---|---|
+| `ugi/exp-noise-injection` | MLP 입력에 예보 오차만큼 잡음 주입 | 2023-24 +3.5%, 2024-25 +2.0% (12번 비교 모두 악화) | 버림 |
+| `ugi/exp-neighbor-hours` | GBDT에 1시간 앞뒤 예보와 그날 예보 요약 14개 추가 | GBDT −2.1~−2.9% (세 연도, 24번 비교 모두 감소), 혼합 −1.0~−1.1% | **채택, 합침** |
 
 ## 실행 방법
 
 ```
 # 평가 모드 (2024-25) 와 채점
 python mlp/train_big.py --seed 0            # 1, 2 도
-python mlp/gbdt.py --objective l1 --seeds 0-2 --round-change --wind-snow --from 2021-01-01 --cap-weight
+python mlp/gbdt.py --objective l1 --seeds 0-2 --round-change --wind-snow --from 2021-01-01 --cap-weight --neighbors
 python mlp/eval_penalty.py
 
 # 여러 연도 검증
@@ -86,8 +90,8 @@ python mlp/cv.py --a rc --b rc,ws,long,cw         # A·B 는 GBDT 설정 토큰
 # 제출 파일
 python mlp/compose.py                             # -> mlp/outputs/composition_stn.csv
 python mlp/train_big.py --final --seed 0          # 1, 2 도
-python mlp/gbdt.py --objective l1 --seeds 0-2 --round-change --wind-snow --from 2021-01-01 --cap-weight --final
-python mlp/predict.py --gbdt 'gbdt_l1_rc_ws_from202101_cw_final_pred*.parquet' --w-mlp 0.7 --composition mlp/outputs/composition_stn.csv
+python mlp/gbdt.py --objective l1 --seeds 0-2 --round-change --wind-snow --from 2021-01-01 --cap-weight --neighbors --final
+python mlp/predict.py --gbdt 'gbdt_l1_rc_ws_from202101_cw_nb_final_pred*.parquet' --w-mlp 0.7 --composition mlp/outputs/composition_stn.csv
 ```
 
 ## 남은 일
