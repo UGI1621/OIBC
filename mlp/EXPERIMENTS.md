@@ -97,14 +97,14 @@ python mlp/eval_penalty.py                  # 대회 점수식 벌금으로 채�
 python mlp/predict.py --gbdt 'gbdt_l1_rc_final_pred*.parquet' --w-mlp 0.7
 ```
 
-2026-10-29 이후 권장 (9절): train_big.py 는 기본이 2021-01부터 학습(`train_from="2021-01-01"`)이라 명령은 같다. GBDT 는 아래처럼.
+2026-10-29 이후 권장 (9·12절): train_big.py 는 기본이 2021-01부터 학습(`train_from="2021-01-01"`)이라 명령은 같다. GBDT 는 아래처럼.
 
 ```
-python mlp/gbdt.py --objective l1 --seeds 0-2 --round-change --wind-snow --from 2021-01-01 --cap-weight           # → gbdt_l1_rc_ws_from202101_cw_test_pred*.parquet
-python mlp/gbdt.py --objective l1 --seeds 0-2 --round-change --wind-snow --from 2021-01-01 --cap-weight --final   # → gbdt_l1_rc_ws_from202101_cw_final_pred*.parquet
+python mlp/gbdt.py --objective l1 --seeds 0-2 --round-change --wind-snow --from 2021-01-01 --cap-weight --neighbors           # → gbdt_l1_rc_ws_from202101_cw_nb_test_pred*.parquet
+python mlp/gbdt.py --objective l1 --seeds 0-2 --round-change --wind-snow --from 2021-01-01 --cap-weight --neighbors --final   # → gbdt_l1_rc_ws_from202101_cw_nb_final_pred*.parquet
 python mlp/eval_penalty.py
 python mlp/compose.py                       # 지점 나누기 팀 구성 → mlp/outputs/composition_stn.csv (오차를 보지 않음)
-python mlp/predict.py --gbdt 'gbdt_l1_rc_ws_from202101_cw_final_pred*.parquet' --w-mlp 0.7 --composition mlp/outputs/composition_stn.csv
+python mlp/predict.py --gbdt 'gbdt_l1_rc_ws_from202101_cw_nb_final_pred*.parquet' --w-mlp 0.7 --composition mlp/outputs/composition_stn.csv
 ```
 
 병렬: `OMP_NUM_THREADS=6 python mlp/train_big.py --seed N &`를 3개씩. 메모리는 프로세스당 1.2~3 GB.
@@ -215,3 +215,19 @@ MLP 는 `train_big.py --fold Y` 로 학습해 `pred_big_foldY_s*.parquet` 를 �
 
 **MLP 예보 오차 노이즈 주입:** 채택하지 않았다. 코드와 결과는 실험 브랜치 `ugi/exp-noise-injection`.
 2023-24 MLP +3.5%, 2024-25 +2.0%. 학습에 있던 발전소만 봐도 +2.5%, +1.5%이고, 12번 비교 모두 나빠졌다.
+
+## 12. 2026-10-29 이웃 시각·하루 요약 입력 (GBDT)
+
+실험 브랜치 `ugi/exp-neighbor-hours` 에서 시험하고 본 줄기에 합쳤다. `common.add_neighbors`, `gbdt.py --neighbors`, `cv.py` 토큰 `nb`.
+- 이웃 시각 8개: 1시간 전·후 예보의 wa_cloud, wa_rain, wb_cloud, wb_precip_prob.
+- 하루 요약 6개: 그날 8~17시 예보의 wa_cloud·wb_cloud 평균·표준편차, wa_rain 이 0 보다 큰 시간 수, wb_precip_prob 최대.
+- 모두 같은 라운드(전날 17시) 예보에 들어 있는 값이다.
+
+| 평가 연도 | GBDT (rc,ws,long,cw) | + nb | 같은 시드끼리 | 혼합 0.7/0.3 |
+|---|---|---|---|---|
+| 2022-23 | 56.6 | 55.1 (−2.7%) | −2.6/−3.4/−1.8% | |
+| 2023-24 | 109.7 | 107.5 (−2.1%) | −2.6/−2.2/−1.4% | 107.7 → 106.6 (−1.0%) |
+| 2024-25 | 201.5 | 195.6 (−2.9%) | −2.9/−3.1/−2.6% | 190.8 → 188.7 (−1.1%) |
+
+- 용량 가중치 없이 비교해도 −2.1~−2.4%(9번 모두 감소), `--seen-only` 로도 −2.2%, −2.1%(6번 모두 감소). 합쳐 24번 비교에서 모두 줄었다.
+- MLP 에는 아직 넣어 보지 않았다. 14개 중 어느 쪽(이웃 시각 / 하루 요약)이 효과를 냈는지도 나눠 보지 않았다.
