@@ -65,7 +65,7 @@ for Y in folds:
     T1, T2 = [pd.Timestamp(f"{y}-06-01 01:00", tz=KST) for y in (Y, Y + 1)]
     te = ((d.ts >= T1) & (d.ts < T2)).values
     if args.seen_only:
-        te &= (d.site_id.map(first) < pd.Timestamp(f"{Y}-04-01 01:00", tz=KST)).values
+        te = te & (d.site_id.map(first) < pd.Timestamp(f"{Y}-04-01 01:00", tz=KST)).values
     h = d[te].reset_index(drop=True)
     cap, y = h.cap.values, h.y.values
 
