@@ -97,14 +97,14 @@ python mlp/eval_penalty.py                  # 대회 점수식 벌금으로 채�
 python mlp/predict.py --gbdt 'gbdt_l1_rc_final_pred*.parquet' --w-mlp 0.7
 ```
 
-2026-10-29 이후 권장 (9·12절): train_big.py 는 기본이 2021-01부터 학습(`train_from="2021-01-01"`)이라 명령은 같다. GBDT 는 아래처럼.
+2026-10-29 이후 권장 (9·12·13절): MLP 는 `python mlp/train_big.py --neighbors --seed N` (2021-01부터 학습은 기본값). GBDT 는 아래처럼.
 
 ```
 python mlp/gbdt.py --objective l1 --seeds 0-2 --round-change --wind-snow --from 2021-01-01 --cap-weight --neighbors           # → gbdt_l1_rc_ws_from202101_cw_nb_test_pred*.parquet
 python mlp/gbdt.py --objective l1 --seeds 0-2 --round-change --wind-snow --from 2021-01-01 --cap-weight --neighbors --final   # → gbdt_l1_rc_ws_from202101_cw_nb_final_pred*.parquet
 python mlp/eval_penalty.py
 python mlp/compose.py                       # 지점 나누기 팀 구성 → mlp/outputs/composition_stn.csv (오차를 보지 않음)
-python mlp/predict.py --gbdt 'gbdt_l1_rc_ws_from202101_cw_nb_final_pred*.parquet' --w-mlp 0.7 --composition mlp/outputs/composition_stn.csv
+python mlp/predict.py --mlp-name bigNB --gbdt 'gbdt_l1_rc_ws_from202101_cw_nb_final_pred*.parquet' --w-mlp 0.7 --composition mlp/outputs/composition_stn.csv
 ```
 
 병렬: `OMP_NUM_THREADS=6 python mlp/train_big.py --seed N &`를 3개씩. 메모리는 프로세스당 1.2~3 GB.
@@ -231,3 +231,19 @@ MLP 는 `train_big.py --fold Y` 로 학습해 `pred_big_foldY_s*.parquet` 를 �
 
 - 용량 가중치 없이 비교해도 −2.1~−2.4%(9번 모두 감소), `--seen-only` 로도 −2.2%, −2.1%(6번 모두 감소). 합쳐 24번 비교에서 모두 줄었다.
 - MLP 에는 아직 넣어 보지 않았다. 14개 중 어느 쪽(이웃 시각 / 하루 요약)이 효과를 냈는지도 나눠 보지 않았다.
+
+## 13. 2026-10-29 이웃 시각 입력을 MLP 에도 (`train_big.py --neighbors`)
+
+실험 브랜치 `ugi/exp-mlp-neighbor-hours` 에서 시험하고 본 줄기에 합쳤다. 채택 기준은 돌리기 전에 정했다: 2024-25 같은 시드 비교 6개 중 4개 이상 감소 + 혼합 감소.
+
+| 평가 연도 | 채점 | MLP 지금 | + nb | 같은 시드 | 혼합 0.7 (GBDT 권장) |
+|---|---|---|---|---|---|
+| 2023-24 (3시드) | 전체 | 110.4 | 106.4 (−3.6%) | −4.8/−2.5/−1.6% | 106.6 → 104.4 (−2.0%) |
+| 2023-24 (3시드) | 학습에 있던 발전소 | 48.3 | 47.1 (−2.6%) | −3.3/−1.2/−2.8% | −1.1% |
+| 2024-25 (6시드) | 전체 | 193.0 | 190.8 (−1.2%) | −3.6/+1.2/+0.5/−1.6/−0.4/−2.0% | 188.6 → 187.0 (−0.8%) |
+| 2024-25 (6시드) | 학습에 있던 발전소 | 128.2 | 126.0 (−1.7%) | −2.9/+0.5/−0.6/−1.9/−0.7/−3.2% | −1.0% |
+
+- 처음 3시드로는 2024-25 같은 시드 비교가 1/3 감소라 판단을 미루고 시드 3~5 를 더 돌렸다(지금 설정·nb 설정 모두).
+- 효과는 작고 시드 흔들림(2024-25 시드별 −3.6 ~ +1.2%)에 묻히기 쉬운 크기다. 제출 때는 시드를 늘리는 것이 좋다.
+- 풍향·라운드 변화는 MLP 에서 나빠졌는데 이웃 시각은 나빠지지 않았다. 이유는 보지 않았다.
+- 결과 파일은 `model_bigNB_*`, 제출은 `predict.py --mlp-name bigNB`.
