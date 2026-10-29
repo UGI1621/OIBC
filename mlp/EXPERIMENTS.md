@@ -103,7 +103,8 @@ python mlp/predict.py --gbdt 'gbdt_l1_rc_final_pred*.parquet' --w-mlp 0.7
 python mlp/gbdt.py --objective l1 --seeds 0-2 --round-change --wind-snow --from 2021-01-01 --cap-weight           # → gbdt_l1_rc_ws_from202101_cw_test_pred*.parquet
 python mlp/gbdt.py --objective l1 --seeds 0-2 --round-change --wind-snow --from 2021-01-01 --cap-weight --final   # → gbdt_l1_rc_ws_from202101_cw_final_pred*.parquet
 python mlp/eval_penalty.py
-python mlp/predict.py --gbdt 'gbdt_l1_rc_ws_from202101_cw_final_pred*.parquet' --w-mlp 0.7
+python mlp/compose.py                       # 평가 모드 예측 오차로 팀 구성 탐색 → mlp/outputs/composition_opt.csv
+python mlp/predict.py --gbdt 'gbdt_l1_rc_ws_from202101_cw_final_pred*.parquet' --w-mlp 0.7 --composition mlp/outputs/composition_opt.csv
 ```
 
 병렬: `OMP_NUM_THREADS=6 python mlp/train_big.py --seed N &`를 3개씩. 메모리는 프로세스당 1.2~3 GB.
@@ -162,5 +163,6 @@ python mlp/predict.py --gbdt 'gbdt_l1_rc_ws_from202101_cw_final_pred*.parquet' -
 - **효과 없던 것:** MLP 학습에 검증 두 달 포함(MLP 0.0%, 혼합 +0.9%). MAE 는 줄었지만, MLP 의 낮은 편향(−2.1%)이 GBDT 의 높은 편향(+0.6%)과 상쇄되던 몫이 줄었다.
 - **학습 가중치 (채점식과 맞추기):** 지금은 이용률 L1 이라 작은 발전소와 큰 발전소의 오차를 같게 본다. GBDT 에 행 가중치를 줘 봤다. 용량 −2.1%(3시드 모두), 용량×k −1.3%, 용량×k×SMP −0.8%. 용량만 쓴다. k·SMP 는 가중치를 일부 행에 몰아(상위 1% 행이 가중치의 13~15%) 실질 학습 데이터를 줄이는 것으로 보인다. MLP 에 용량 가중치를 넣으면 MAE 는 줄었지만 벌금은 +0.3%(시드별 −0.4/+1.2/0.0%)라 넣지 않았다. MLP 는 발전소 임베딩이 이미 발전소별 보정을 배우기 때문으로 추정한다.
 - **k 정의 확인:** 데이터 안내(README)에 "k 는 ts 의 시가 11~15 이면 3"으로 적혀 있어 채점 도구의 가정과 같다.
+- **팀 구성 (`mlp/compose.py`):** 모델은 그대로 두고 발전소를 G1/G2 로 나누는 방법만 바꿨다. 한 팀으로 합친 하한(규칙 위반) 186.7 대비 snake 는 +2.2%라 구성으로 얻을 수 있는 몫은 최대 2.2%다. snake 에서 시작해 벌금을 줄이는 옮기기·맞바꾸기를 하나씩 적용했다. 과적합 확인: 홀수 주로 고르고 짝수 주로 확인하면 −0.7%, 반대로도 −0.7%(고른 기간에서는 −1.3%). 오차를 보지 않고 같은 예보 지점 발전소를 두 팀에 번갈아 나누기만 해도 −0.5%. 제출용은 1년 전체로 고른다(홀드아웃 190.8 → 188.4, −1.3%로 보이지만 기대는 −0.7% 안팎). 탐색 후 두 팀이 같은 방향으로 틀린 시각의 비중(SMP×k 가중)이 85.9% → 90.8%, 발전소 2개 이상인 예보 지점 중 두 팀에 나뉜 지점이 69% → 83%.
 - **혼합 비율:** 0.6~0.8 사이는 191.4~191.9 로 차이가 작아 0.7 을 유지한다. MLP 가 좋아지면서 혼합으로 얻는 몫이 −1.8%에서 −0.9%로 줄었다.
 - **주의:** 8절과 같이 같은 홀드아웃을 보며 골랐다. 최종 모드(제출) 재학습은 아직이다.

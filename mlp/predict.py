@@ -3,13 +3,14 @@
   python mlp/predict.py                                    # 기본: mlp/outputs/model_big_final_s*.pt 전부 평균
   python mlp/predict.py --models a.pt,b.pt,c.pt            # 지정한 모델들의 예측 평균 (시드 앙상블)
   python mlp/predict.py --model a.pt                       # 모델 하나
-  옵션 --composition snake|ref
+  옵션 --composition snake|ref|<csv 경로>   (csv 는 site_id, group 열. 권장: mlp/outputs/composition_opt.csv, compose.py 로 생성)
 
 출력 (mlp/outputs/):
   composition.csv            발전소 253개소의 G1/G2 배정
   forecast.csv               그룹별·시각별 예측 kWh (17,520행)
   per_site_forecast.parquet  발전소별 예측 (구성 최적화용)
 구성 snake = 용량 큰 순서로 G1,G2,G2,G1 반복 배정. ref = sites.csv 의 current_group(A->G1, B->G2).
+  csv = compose.py 가 홀드아웃 오차로 snake 를 고친 구성 (홀드아웃 벌금 기대 -0.7% 안팎).
 """
 from __future__ import annotations
 
@@ -25,7 +26,7 @@ from common import OUT, Scaler, build_test_frame, log, mlp_predict
 ap = argparse.ArgumentParser()
 ap.add_argument("--model", default=None, help="모델 파일 하나")
 ap.add_argument("--models", default=None, help="쉼표로 구분한 모델 파일 여러 개. 예측(이용률)을 평균한다")
-ap.add_argument("--composition", choices=["snake", "ref"], default="snake")
+ap.add_argument("--composition", default="snake", help="snake | ref | 구성 csv 경로 (site_id, group)")
 ap.add_argument("--gbdt", default=None, help="GBDT 최종 예측 parquet glob (예: 'gbdt_l1_final_pred*.parquet'). 여러 개면 평균")
 ap.add_argument("--w-mlp", type=float, default=0.7, help="--gbdt 가 있을 때 MLP 가중치. GBDT 는 1 - w")
 args = ap.parse_args()
@@ -73,7 +74,11 @@ log(f"predicted {len(d):,} rows ({d.site_id.nunique()} sites x {len(index):,} h)
 cap = sites.set_index("site_id").capacity_kw
 if args.composition == "ref":
     grp = sites.set_index("site_id").current_group.map({"A": "G1", "B": "G2"})
+elif args.composition.endswith(".csv"):
+    grp = pd.read_csv(args.composition).set_index("site_id").group.reindex(sites.site_id)
+    assert grp.notna().all(), "구성 파일에 없는 발전소가 있다"
 else:
+    assert args.composition == "snake", args.composition
     order = cap.sort_values(ascending=False).index
     pattern = ["G1", "G2", "G2", "G1"]
     grp = pd.Series({s: pattern[i % 4] for i, s in enumerate(order)}).reindex(sites.site_id)

@@ -49,6 +49,8 @@ COMPS = {
     "one_team(하한)": pd.Series("G1", index=capk.index),
 }
 lat = sites.set_index("site_id").lat; COMPS["north_south"] = (lat >= lat.median()).map({True: "G1", False: "G2"})
+if (OUT / "composition_opt.csv").exists():                         # compose.py 결과 (홀드아웃으로 고른 구성이라 낙관적)
+    COMPS["opt(compose.py)"] = pd.read_csv(OUT / "composition_opt.csv").set_index("site_id").group
 
 def penalty(p, comp="snake"):
     g = pd.DataFrame({"ts": d.ts, "grp": d.site_id.map(COMPS[comp]).values, "p": p * cap, "a": y * cap})
