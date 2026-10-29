@@ -40,9 +40,9 @@ def load_sites() -> pd.DataFrame:
 
 def load_forecasts(split: str, rnd: int, ts_from=None):
     fa = pd.read_parquet(DATA / split / "forecast_wa.parquet",
-                         columns=["wa_station", "round", "ts"] + B.WA_COLS)
+                         columns=["wa_station", "round", "ts"] + B.WA_COLS + EXTRA_WA)
     fb = pd.read_parquet(DATA / split / "forecast_wb.parquet",
-                         columns=["wb_station", "round", "ts"] + B.WB_COLS)
+                         columns=["wb_station", "round", "ts"] + B.WB_COLS + EXTRA_WB)
     for d in (fa, fb):
         d["ts"] = pd.to_datetime(d.ts)
     fa = fa[fa["round"] == rnd]
@@ -86,6 +86,24 @@ def add_round_change(d: pd.DataFrame, d10: pd.DataFrame) -> pd.DataFrame:
     m = d[["site_id", "ts"]].merge(d10[["site_id", "ts"] + RC], on=["site_id", "ts"], how="left")
     for c in RC:
         d[f"r_{c}"] = d[c].values - m[c].values
+    return d
+
+
+# 풍향·눈 입력 (GBDT 전용): 베이스라인이 안 쓰던 예보 열 중 효과가 확인된 것만. load_forecasts 가 항상 읽어 둔다.
+#   풍향 sin/cos 4개: GBDT 홀드아웃 벌금 -1.9% (3시드 모두 감소). MLP 에 넣으면 +4.2% 라 MLP 에는 안 넣는다.
+#   눈·결빙 5개: 1년 전체로는 0%지만 눈 예보일(15일)만 보면 -4.2%, 다른 날 손해 없음. 눈 많은 겨울 대비.
+#   나머지(운고·돌풍·체감/습구온도·비 세부·지점 거리)와 새 열의 라운드 변화는 효과가 없어 뺐다.
+EXTRA_WA = ["wa_wind_dir", "wa_snow"]
+EXTRA_WB = ["wb_wind_dir", "wb_snow_prob", "wb_ice_prob", "wb_snow", "wb_ice"]
+WS_FEATS = ["wa_wind_dir_sin", "wa_wind_dir_cos", "wb_wind_dir_sin", "wb_wind_dir_cos",
+            "wa_snow", "wb_snow_prob", "wb_ice_prob", "wb_snow", "wb_ice"]
+
+
+def add_wind_snow(d: pd.DataFrame) -> pd.DataFrame:
+    """풍향(도)을 sin/cos 로 바꿔 WS_FEATS 를 갖춘다. 359도와 1도가 가깝게 보이도록."""
+    for c in ("wa_wind_dir", "wb_wind_dir"):
+        r = np.deg2rad(d[c])
+        d[c + "_sin"], d[c + "_cos"] = np.sin(r), np.cos(r)
     return d
 
 
